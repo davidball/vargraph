@@ -1,0 +1,26 @@
+
+MATCH path=(n)-[r*0..2]-(n2:Event) WHERE n.stId='R-HSA-186794' Return path limit 10;
+
+//finds nothing 
+MATCH path=(n)-[r*0..2]-(n2:Pathway) WHERE n.stId='R-HSA-186794' Return nodes(path) limit 10;
+
+
+
+
+//4.5 seconds
+
+MATCH path=(n)-[r*0..1]-(n2:Pathway) WHERE n.stId='R-HSA-186794' Return nodes(path) limit 10;
+
+
+// ? seconds  roughly a couple minutes
+MATCH path=(n)-[r*0..2]-(n2:Pathway) WHERE n.stId='R-HSA-186794' Return nodes(path) limit 10;
+
+
+//  ? seconds ? 
+MATCH (n)-[r*0..2]-(n2:Pathway) WHERE n.stId='R-HSA-186794' Return n2;
+
+
+//this might be a good way to find all pathways affected by any of them
+
+MATCH (n)-[r*0..1]-(n2:Pathway) WHERE n.stId in ['R-HSA-186794',] Return n2;
+
