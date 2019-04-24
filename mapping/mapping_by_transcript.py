@@ -31,11 +31,15 @@ print(cypher)
 
 #match (n:EntityWithAccessionedSequence) where n.speciesName='Homo sapiens' and size(filter(y in  [x IN ['NM_005157','NM_001014432','NM_001626','NM_005465','NM_004304','NM_000038','NM_000044','NM_006015','NM_000051','NM_001184','NM_001699','NM_004656','NM_000465','NM_000633','NM_001706','NM_004333','NM_007294','NM_000059','NM_032043','NM_000061','NM_032415','NM_053056','NM_001759','NM_001760','NM_001238','NM_001783','NM_000626','NM_004360','NM_016507','NM_000075','NM_001259','NM_000077','NM_004364','NM_001114122','NM_007194','NM_004380','NM_005211','NM_001904','NM_001014796','NM_022552','NM_005228','NM_019063','NM_001429','NM_004448','NM_001982','NM_005235','NM_202001','NM_000400','NM_004449','NM_001122742','NM_005238','NM_004956','NM_001079675','NM_004454','NM_005243','NM_004456','NM_139076','NM_001113378','NM_018062','NM_033632','NM_001144892','NM_004465','NM_175929','NM_005117','NM_002006','NM_020638','NM_005247','NM_002007','NM_004464','NM_020996','NM_002009','NM_033163','NM_002010','NM_023110','NM_000141','NM_000142','NM_022963','NM_002017','NM_002019','NM_004119','NM_023067','NM_182625','NM_002067','NM_002072','NM_000516','NM_000545','NM_005343','NM_005896','NM_002168','NM_003866','NM_004972','NM_000215','NM_002253','NM_004521','NM_000222','NM_005933','NM_004985','NM_005561','NM_002755','NM_030662','NM_021960','NM_002392','NM_002393','NM_001127500','NM_000249','NM_004529','NM_005373','NM_005590','NM_000251','NM_002439','NM_000179','NM_004958','NM_012222','NM_002467','NM_001033082','NM_005378','NM_002468','NM_002485','NM_001042492','NM_017617','NM_024408','NM_000435','NM_002520','NM_002524','NM_013957','NM_002529','NM_006180','NM_002530','NM_024675','NM_181459','NM_002584','NM_006206','NM_002609','NM_006218','NM_006219','NM_005026','NM_001282427','NM_181523','NM_000535','NM_015869','NM_002717','NM_000264','NM_000314','NM_002834','NM_002875','NM_133509','NM_058216','NM_002878','NM_003579','NM_002880','NM_000321','NM_020975','NM_152756','NM_002944','NM_001272060','NM_032444','NM_005359','NM_003073','NM_005631','NM_005417','NM_000455','NM_198253','NM_001127208','NM_001128148','NM_005656','NM_000546','NM_000368','NM_000548','NM_000551','NM_005431'] | x in n.otherIdentifier] where y is not null )) >0 return n.stID, n.otherIdentifier,size(filter(y in  [x IN ['NM_005157','NM_001014432','NM_001626','NM_005465','NM_004304','NM_000038','NM_000044','NM_006015','NM_000051','NM_001184','NM_001699','NM_004656','NM_000465','NM_000633','NM_001706','NM_004333','NM_007294','NM_000059','NM_032043','NM_000061','NM_032415','NM_053056','NM_001759','NM_001760','NM_001238','NM_001783','NM_000626','NM_004360','NM_016507','NM_000075','NM_001259','NM_000077','NM_004364','NM_001114122','NM_007194','NM_004380','NM_005211','NM_001904','NM_001014796','NM_022552','NM_005228','NM_019063','NM_001429','NM_004448','NM_001982','NM_005235','NM_202001','NM_000400','NM_004449','NM_001122742','NM_005238','NM_004956','NM_001079675','NM_004454','NM_005243','NM_004456','NM_139076','NM_001113378','NM_018062','NM_033632','NM_001144892','NM_004465','NM_175929','NM_005117','NM_002006','NM_020638','NM_005247','NM_002007','NM_004464','NM_020996','NM_002009','NM_033163','NM_002010','NM_023110','NM_000141','NM_000142','NM_022963','NM_002017','NM_002019','NM_004119','NM_023067','NM_182625','NM_002067','NM_002072','NM_000516','NM_000545','NM_005343','NM_005896','NM_002168','NM_003866','NM_004972','NM_000215','NM_002253','NM_004521','NM_000222','NM_005933','NM_004985','NM_005561','NM_002755','NM_030662','NM_021960','NM_002392','NM_002393','NM_001127500','NM_000249','NM_004529','NM_005373','NM_005590','NM_000251','NM_002439','NM_000179','NM_004958','NM_012222','NM_002467','NM_001033082','NM_005378','NM_002468','NM_002485','NM_001042492','NM_017617','NM_024408','NM_000435','NM_002520','NM_002524','NM_013957','NM_002529','NM_006180','NM_002530','NM_024675','NM_181459','NM_002584','NM_006206','NM_002609','NM_006218','NM_006219','NM_005026','NM_001282427','NM_181523','NM_000535','NM_015869','NM_002717','NM_000264','NM_000314','NM_002834','NM_002875','NM_133509','NM_058216','NM_002878','NM_003579','NM_002880','NM_000321','NM_020975','NM_152756','NM_002944','NM_001272060','NM_032444','NM_005359','NM_003073','NM_005631','NM_005417','NM_000455','NM_198253','NM_001127208','NM_001128148','NM_005656','NM_000546','NM_000368','NM_000548','NM_000551','NM_005431'] | x in n.otherIdentifier] where y is not null )) as theSize
 
-def subgraph_by_transcript_ids(transcript_ids):
+def subgraph_by_transcript_ids(transcript_ids, with_statement = False):
     cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
-    cypher = "match (n) where %s return n" % cypher_list
+    cypher = "match (n:ReferenceGeneProduct) where %s %s n" % (cypher_list, ("WITH" if with_statement else "RETURN"))
     return cypher
 
+def subgraph_by_genes(genes, with_statement = False):
+    cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(genes)
+    cypher = "match (n:ReferenceGeneProduct) where %s %s n" % (cypher_list, ("WITH" if with_statement else "RETURN"))
+    return cypher
 
 def subgraph_by_transcript_ids_with_neighbors(transcript_ids):
     #note: filtering out species relationship as it is noise
@@ -48,13 +52,189 @@ def subgraph_by_transcript_ids_with_neighbors_two_deep(transcript_ids):
     cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
     cypher = "match (n)-[r]-(anyneighbor)-[r2]-(n2) where not (anyneighbor:ReferenceDatabase) and not (n2:ReferenceDatabase) and not (anyneighbor:InstanceEdit) and not (n:InstanceEdit) and not (n2:InstanceEdit) and not (n)-[r:species]-(anyneighbor) and not (anyneighbor)-[r2:species]-(n2) and %s return n, anyneighbor,n2" % cypher_list
     return cypher
+
+def subgraph_by_transcript_ids_with_neighbors_three_deep(transcript_ids):
+    #note: filtering out species relationship as it is noise
+    cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
+    cypher = "match (n)-[r]-(anyneighbor)-[r2]-(n2)-[r3]-(n3) where not (anyneighbor:ReferenceDatabase) and not (n2:ReferenceDatabase) and not (anyneighbor:InstanceEdit) and not (n:InstanceEdit) and not (n2:InstanceEdit) and not (n3:InstanceEdit) and not (n3:ReferenceDatabase) and not (n)-[r:species]-(anyneighbor) and not (n3:Species) and not (anyneighbor)-[r2:species]-(n2) and %s return n, anyneighbor,n2,n3" % cypher_list
+    return cypher
+
+
+def layer_filter_clause(layer_node_alias):
+    exclude_node_types = [
+        'Species',
+        'Compartment',
+        'ReferenceDatabase',
+        'InstanceEdit'
+    ]
+
+    filter_list_template = 'not (%s:' + ') and not (%s:'.join(exclude_node_types) + ')'
+    
+    layer_node_filter = filter_list_template % ((layer_node_alias,) * len(exclude_node_types))
+    return layer_node_filter
+
+def layer_clause(from_node_alias, to_node_alias):
+    return "MATCH (%s)-[r]-(%s) where %s" % (from_node_alias, to_node_alias, layer_filter_clause(to_node_alias))
+
+def subgraph_by_transcript_ids_using_with(transcript_ids, depth = 3):
+    #note: filtering out species relationship as it is noise
+
+    
+
+    cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
+    #cypher = "match (n)-[r]-(anyneighbor)-[r2]-(n2)-[r3]-(n3) where not (anyneighbor:ReferenceDatabase) and not (n2:ReferenceDatabase) and not (anyneighbor:InstanceEdit) and not (n:InstanceEdit) and not (n2:InstanceEdit) and not (n3:InstanceEdit) and not (n3:ReferenceDatabase) and not (n)-[r:species]-(anyneighbor) and not (n3:Species) and not (anyneighbor)-[r2:species]-(n2) and %s return n, anyneighbor,n2,n3" % cypher_list
+    
+    cypher_variant_filter = "MATCH (n) where %s \nwith n" % cypher_list
+    
+
+    cypher = cypher_variant_filter + "\n" + \
+        layer_clause('n','n2') + \
+        "\nWITH n,n2\n" + \
+        layer_clause('n2','n3') + \
+        "\nWITH n,n2,n3\n"+ \
+        layer_clause('n3','n4') + \
+        "\nRETURN n,n2,n3,n4"
+#    cypher = "%s\nMATCH (n)-[r]-(%s) where %s\nRETURN n,%s" % (cypher_variant_filter, layer_node_alias, layer_node_filter, layer_node_alias)
+
+    return cypher
+
+
+def profile_protein(transcript_id):
+    cypher = "MATCH (n:ReferenceEntity)<-[r:referenceEntity]-(re) where ('NM_001127208' in n.otherIdentifier) \
+with re \
+MATCH (re)-[r:hasComponent]-(c) \
+with re,r,c \
+MATCH (c)-[r2:hasComponent]-(n3) \
+with re,r,c,n3 \
+MATCH (n3)-[r3:input|output]-(n4) \
+return re,r,c,n3,n4,r3"
+    return cypher
+
+
+
+#     better:
+
+#     MATCH (n:ReferenceEntity)<-[r:referenceEntity]-(re) where ('NM_001127208' in n.otherIdentifier) 
+# with re
+# MATCH (re)<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c)
+# return re,r,c
 #sample case:
 #'19-078-11239'
 case_transcripts = ["NM_001127208", "NM_001127208", "NM_032458", "NM_032458", "NM_015338", "NM_032458", "NM_032458", "NM_032458"]
+# x = r('19-078-11239')
+# x.variant_calls.map {|v| v.gene_name}.uniq
+case_genes=["TET2", "PHF6", "ASXL1"]
+
+#of those the only ones that actually match in reactome are:
+case_transcripts = ['NM_001127208' ,'NM_015338']
 
 
+
+spacer = "------------------------------"
+print("subgraph_by_transcript_ids(case_transcripts)")
 print(subgraph_by_transcript_ids(case_transcripts))
-
+print(spacer)
+print("subgraph_by_transcript_ids_with_neighbors(case_transcripts)")
 print(subgraph_by_transcript_ids_with_neighbors(case_transcripts))
-
+print(spacer)
 print(subgraph_by_transcript_ids_with_neighbors_two_deep(case_transcripts))
+print(spacer)
+print(subgraph_by_transcript_ids_with_neighbors_three_deep(case_transcripts))
+print(spacer)
+print(subgraph_by_transcript_ids_using_with(case_transcripts, 2))
+
+
+
+#wow
+# MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re) where ('NM_001127208' in n.otherIdentifier) 
+# with re,r1,n
+# MATCH path1=(re)<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c)
+# with re,r,c,r1,n,path1
+# MATCH path2=(p:Pathway)-[e:hasEvent*]->(c)
+# return re,r,c,p,e,r1,n,path1,path2
+
+
+def finding_by_gene_experiment(gene):
+    cypher = 'match path=(n:EntityWithAccessionedSequence{speciesName:"Homo sapiens"})-[r*0..2]-(n2:EntityWithAccessionedSequence{speciesName:"Homo sapiens"}) where "%s" in n.name and "%s" in n2.name  return n,r,n2,path'
+    return (cypher % (gene,gene))
+
+def node_finder_clause_by_gene(gene):
+    cypher = 'match (n:ReferenceEntity) where "%s" in n.name return n'
+    return (cypher % (gene,gene))
+
+def node_finder_clause_by_transcript(transcript_id):
+    template = "MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re) where ('%s' in n.otherIdentifier) with n,r1,re" 
+    return template % transcript_id
+
+def pathway_query_from_initial_match_clause(init_clause):
+    Pathways_main_part = """MATCH (n)<-[r1:referenceEntity]-(re) \
+        with n,r1,re \
+        MATCH path1=(re)<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c) \
+        with re,r,c,r1,n,path1 \
+        MATCH path2=(p:Pathway)-[e:hasEvent*]->(c) \
+        return n,path1,path2""" #re,r,c,p,e,r1
+
+    return ("%s\n%s" % (init_clause, Pathways_main_part))
+
+def pathways_by_transcript_list(transcript_ids):
+    
+    return pathway_query_from_initial_match_clause(subgraph_by_transcript_ids(transcript_ids, True))
+    
+
+def pathways_by_transcript_id(transcript_id):
+
+    return pathway_query_from_initial_match_clause(node_finder_clause_by_transcript(transcript_id))
+    
+def pathways_by_gene_list(genes):
+    
+    return pathway_query_from_initial_match_clause(subgraph_by_genes(genes, True))
+    
+
+#class ReactomeQuery():
+    
+    #hmmm way too broad, but why? not sure yet. 
+
+#     MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re{speciesName:'Homo sapiens'}) where ('PIK3R1' in n.name) 
+# with re,r1,n 
+# MATCH path1=(re)<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c)
+# with re,r,c,r1,n,path1 
+# MATCH path2=(p:Pathway)-[e:hasEvent*]->(c)
+# return re,r,c,p,e,r1,n,path1,path2 limit 1000
+
+print(spacer)
+
+print(pathways_by_transcript_id('NM_001127208'))
+
+print(spacer)
+
+print(pathways_by_transcript_list(case_transcripts))
+
+print(spacer)
+print("pathways by gene")
+print(pathways_by_gene_list(case_genes))
+
+
+print(spacer)
+print("pathways by gene...executes fast but without limit 100ish browser bogs down")
+print(pathways_by_gene_list(['PIK3R1']))
+
+
+from neo4j.v1 import GraphDatabase
+import os
+user='neo4j'
+password = 'reactome'
+password = os.environ['REACTOME_PWD']
+uri="bolt://0.0.0.0:7687"
+driver = GraphDatabase.driver(uri, auth=(user, password))
+sess = driver.session()
+
+def runquery(cypertxt):
+    print("about to run query")
+    result = sess.run(cypertxt)
+    print("about to ask for values()")
+    results = result.values()
+    return results
+
+#print(runquery(pathways_by_gene_list(['PIK3R1']))) 
+#x = runquery(pathways_by_gene_list(['PIK3R1']))
+#n_ids = [r[6].id for r in x]
