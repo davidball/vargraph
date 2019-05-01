@@ -1,6 +1,6 @@
 import yaml
 import csv
-
+from collections import defaultdict
 
 transcript_path = "data/config_panels_transcripts.yaml"
 
@@ -100,7 +100,7 @@ def subgraph_by_transcript_ids_using_with(transcript_ids, depth = 3):
 
 
 def profile_protein(transcript_id):
-    cypher = "MATCH (n:ReferenceEntity)<-[r:referenceEntity]-(re) where ('NM_001127208' in n.otherIdentifier) \
+    cypher = "MATCH (n:ReferenceEntity)<-[r:referenceEntity]-(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'}) where ('NM_001127208' in n.otherIdentifier) \
 with re \
 MATCH (re)-[r:hasComponent]-(c) \
 with re,r,c \
@@ -163,17 +163,17 @@ def node_finder_clause_by_gene(gene):
     return (cypher % (gene,gene))
 
 def node_finder_clause_by_transcript(transcript_id):
-    template = "MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re) where ('%s' in n.otherIdentifier) with n,r1,re" 
+    template = "MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'}) where ('%s' in n.otherIdentifier) with n,r1,re" 
     return template % transcript_id
 
 def pathway_query_from_initial_match_clause(init_clause):
-    Pathways_main_part = """MATCH (n)<-[r1:referenceEntity]-(re) \
+    Pathways_main_part = """MATCH (n)<-[r1:referenceEntity]-(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'}) \
         with n,r1,re \
-        MATCH path1=(re)<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c) \
+        MATCH path1=(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'})<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c) \
         with re,r,c,r1,n,path1 \
-        MATCH path2=(p:Pathway)-[e:hasEvent*]->(c) \
-        return n,path1,path2""" #re,r,c,p,e,r1
-
+        MATCH path2=(p:TopLevelPathway{displayName:'Disease'})-[e:hasEvent*]->(c) \
+        with nodes(path2) as pns unwind(pns) as pn with pn MATCH (pn:Pathway) return distinct  pn""" #re,r,c,p,e,r1
+    #strange, filtering by disease seems reasonable but if do so loose tp53 matches
     return ("%s\n%s" % (init_clause, Pathways_main_part))
 
 def pathways_by_transcript_list(transcript_ids):
@@ -238,3 +238,68 @@ def runquery(cypertxt):
 #print(runquery(pathways_by_gene_list(['PIK3R1']))) 
 #x = runquery(pathways_by_gene_list(['PIK3R1']))
 #n_ids = [r[6].id for r in x]
+
+
+class PathwayMatrixByGenes():
+    def __init__(self, gene_list):
+        self.gene_list = gene_list
+    
+    def build_matrix(self, path = ""):
+        results = {}
+        pathway_data = defaultdict(list)
+        pathway_genes = defaultdict(list)
+        gene_pathways =  {gene:[] for gene in self.gene_list}
+        for gene in self.gene_list:
+            pathways = runquery(pathways_by_gene_list([gene]))
+            results[gene] = pathways
+            
+            for row in pathways:
+                for node in row:
+                    node_id = node['stId']
+                    pathway_data[node_id] = node                    
+                    pathway_genes[node_id].append(gene)
+                    gene_pathways[gene].append(node_id)
+                        
+        self.pathway_data = pathway_data
+        self.pathway_genes = pathway_genes
+        self.gene_pathways = gene_pathways
+
+        self.matrix = self.matrix_pathways_by_genes()
+
+        if len(path)>0:
+            self.save_matrix(path)
+
+        return self.matrix
+
+    def matrix_pathways_by_genes(self):        
+        gene_keys = self.gene_pathways.keys()
+        matrix = []
+        header_row = ['Pathway'] + [g for g in gene_keys] + ['Count']
+        matrix.append(header_row)
+        for k,v in self.pathway_genes.items():
+            values = [1 if pk in v else 0 for  pk in gene_keys]
+            matrix_row = [self.pathway_data[k]['displayName']] + values + [sum(values)]
+            matrix.append(matrix_row)
+        return matrix
+
+    def matrix_genes_by_pathways(self):
+        pathway_keys = self.pathway_data.keys()
+        matrix = []
+        header_row = ['Gene'] + [self.pathway_data[pk]['name'] for pk in pathway_keys ]
+        matrix.append(header_row)
+        for k,v in self.gene_pathways.items():
+            matrix_row = [k] + [1 if pk in v else 0 for  pk in pathway_keys]
+            matrix.append(matrix_row)
+        return matrix
+
+    def summarize(self):
+        print("Total pathways found: %i" % len(self.pathway_data.keys()))
+
+        for k,v in self.gene_pathways.items():
+            print("Gene %s: %i pathways" % (k,len(v)))
+
+    def save_matrix(self,path):
+        with open(path,"w") as f:
+            writer = csv.writer(f)
+            for row in self.matrix:
+                writer.writerow(row)                

@@ -1,0 +1,21 @@
+<!doctype html>
+
+
+<h1>Cypher examples</h1>
+<code>
+    {{ cypher1}}
+</code>
+<code></code>
+    {{ cypher2}}
+</code>
+
+<h1>Matrix</h1>
+{{ matrix }}
+
+
+{% for row in matrix %}
+{% for col in row %}
+{{col}}
+{% endfor %}
+{% endfor %}
+

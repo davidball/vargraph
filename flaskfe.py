@@ -3,6 +3,8 @@
 # to launch:
 #  FLASK_APP=flaskfe.py flask run
 from flask import Flask
+from flask import request
+from flask import render_template
 import mapping.mapping_by_transcript as mt
 
 app = Flask(__name__)
@@ -16,18 +18,28 @@ def transcripts(transcript_ids):
     part1 = mt.pathways_by_transcript_list(transcript_ids.split(","))
 
     part2 = "<br/><br/>".join([mt.pathways_by_transcript_id(x) for x in transcript_ids])
-
      
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
+
+def render_gene_list(gene_list):
+        
+        a = mt.PathwayMatrixByGenes(gene_list)
+        m = a.build_matrix('matrixtest.csv')
+
+        return render_template('gene_list_analysis.html',
+                cypher1=mt.pathways_by_gene_list(gene_list),
+                cypher2=[mt.pathways_by_gene_list([x]) for x in gene_list],
+                matrix=m)
+
+# @app.context_processor
+# def render_table(data):
+#         return "just testing"
+        
 @app.route("/genes/<string:gene_names>")
 def genes(gene_names):
     gene_list = gene_names.split(",")
-    part1 = mt.pathways_by_gene_list(gene_list)
-
-    part2 = "<br/><br/>".join([mt.pathways_by_gene_list([x]) for x in gene_list])
-
-    return part1 + "<br/><br/>" + part2
+    return render_gene_list(gene_list)
 
 @app.route("/samples")
 def samples():
@@ -36,3 +48,12 @@ def samples():
         "NM_000321,NM_001127208,NM_000546'>19-086-14883</a></li>"
         "<li><a href='/genes/PIK3R1'>PIK3RI</a></li>"
         "</ul>")
+
+@app.route('/analysis', methods=['GET'])
+def get_analysis():
+        return render_template('analysis.html')
+        
+@app.route('/analysis', methods=[ 'POST'])
+def post_analysis():
+        gene_list = request.form['gene_list'].split("\n")
+        return render_gene_list(gene_list)
