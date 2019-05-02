@@ -1,21 +1,37 @@
-<!doctype html>
+{% extends "bootstrap/base.html" %}
+{% block content %}
+
+<h1>Gene List Analysis</h1>
+<ul>
+    {% for g in gene_list %}
+        <li>{{g}}</li>
+    {% endfor %}
+</ul>
+<h1>Matrix</h1>
+<table class="">
+{% for row in matrix %}
+<tr>
+{% for col in row %}
+<td style="max-width:170px">
+{{col}}
+</td>
+{% endfor %}
+</tr>
+{% endfor %}
+
+</table>
 
 
 <h1>Cypher examples</h1>
+<h2>Cypher 1</h2>
 <code>
     {{ cypher1}}
 </code>
-<code></code>
-    {{ cypher2}}
+<h2>Cypher 2</h2>
+{% for c in cypher2 %}
+<h3>Another Cypher</h3>
+<code>
+    {{ c }}
 </code>
-
-<h1>Matrix</h1>
-{{ matrix }}
-
-
-{% for row in matrix %}
-{% for col in row %}
-{{col}}
 {% endfor %}
-{% endfor %}
-
+{% endblock %}
