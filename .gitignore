@@ -1,0 +1,5 @@
+graphdbs/
+*.xlsx
+*.csv
+*.json
+*.pyc
