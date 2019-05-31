@@ -1,6 +1,110 @@
 <!doctype html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js" integrity="sha256-k9RyZhvMj2bg0fd8L3IE41t0HpTXnivMoePN/Ksq250=" crossorigin="anonymous"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-quadtree.v1.min.js"></script>
+<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+<script src="https://d3js.org/d3-force.v2.min.js"></script>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+<script src="https://d3js.org/d3-drag.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-ease.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+
+<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+<script src="https://d3js.org/d3-transition.v1.min.js"></script>
+<script src="https://d3js.org/d3-force.v1.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='abc.js') }}"></script>
+<script src="{{ url_for('static', filename='reactomejs.js') }}"></script>
+<script src="{{ url_for('static', filename='reactomejsquiz.js') }}"></script>
+
 <h1>Enter Gene List</h1>
 <form method='post'>
-    <textarea name='gene_list' cols="50" rows= "20"></textarea><br/>
+    <textarea name='gene_list' cols="50" rows= "20">
+APC
+BRIP1
+CTNNB1
+PIK3R1
+TP53
+CHEK1
+DNMT3A
+FGF2
+PALB2
+RAD54L
+RB1
+TET2
+    </textarea><br/>
     <input type='submit'>Find Pathways</input>
 </form>
+
+<div id="viewer"><svg id="svg_viewer"></svg></div>
+<script>
+
+function disjointGraph(data) {
+    //derived from https://observablehq.com/@d3/disjoint-force-directed-graph
+
+  const links = data.links.map(d => Object.create(d));
+  const nodes = data.nodes.map(d => Object.create(d));
+
+  const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.id))
+      .force("charge", d3.forceManyBody())
+      .force("x", d3.forceX())
+      .force("y", d3.forceY());
+
+  const svg = d3.select(DOM.svg(width, height))
+      .attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+  const link = svg.append("g")
+      .attr("stroke", "#999")
+      .attr("stroke-opacity", 0.6)
+    .selectAll("line")
+    .data(links)
+    .join("line")
+      .attr("stroke-width", d => Math.sqrt(d.value));
+
+  const node = svg.append("g")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5)
+    .selectAll("circle")
+    .data(nodes)
+    .join("circle")
+      .attr("r", 5)
+      .attr("fill", color)
+      .call(drag(simulation));
+
+  node.append("title")
+      .text(d => d.id);
+
+  simulation.on("tick", () => {
+    link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+    node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+  });
+
+  invalidation.then(() => simulation.stop());
+
+  //return svg.node();
+}
+
+data =  {
+  nodes: [{id:"test1"}, {id:"test2"}],
+
+  links: [{source:'test1'},{target:'test2'}]
+};
+var width = 500;
+var height = 500;
+var simulation = d3.forceSimulation(data.nodes);
+//disjointGraph(data);
+</script>

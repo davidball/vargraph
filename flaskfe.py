@@ -2,6 +2,8 @@
 
 # to launch:
 #  FLASK_APP=flaskfe.py flask run
+# or with debugging/autorefresh:
+# FLASK_APP=flaskfe.py FLASK_DEBUG=1 python -m flask run
 from flask import Flask
 from flask import request
 from flask import render_template
@@ -35,7 +37,7 @@ def render_gene_list(gene_list):
                            cypher1=mt.pathways_by_gene_list(gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in gene_list],
-                           matrix=m, gene_list=gene_list)
+                           matrix=m, gene_list=gene_list, matrixjson = a.to_json())
 
 # @app.context_processor
 # def render_table(data):

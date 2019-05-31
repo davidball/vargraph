@@ -1,6 +1,15 @@
 {% extends "bootstrap/base.html" %}
 {% block content %}
 
+
+
+
+
+
+<style>.table {
+    max-width:600px;
+}
+</style>
 <h1>Gene List Analysis</h1>
 <ul>
     {% for g in gene_list %}
@@ -8,20 +17,35 @@
     {% endfor %}
 </ul>
 <h1>Matrix</h1>
-<table class="">
+Note: Only showing those pathways matched to more than 1 variant in the set
+
+<table class="table">
+
 {% for row in matrix %}
+{% if loop.first or row[-1]>1 %} 
+{% if loop.first %}
+<thead>
+{% endif %}
 <tr>
 {% for col in row %}
-<td style="max-width:170px">
+
+<{% if loop.first%}th{%else%}td{%endif%} style="max-width:170px" {% if loop.last %}class="last_col"{%endif%}>
 {{col}}
-</td>
+</{% if loop.first%}th{%else%}td{%endif%}>
 {% endfor %}
 </tr>
+{% if loop.first %}
+</thead>
+<tbody>
+{% endif %}
+{% endif %}
 {% endfor %}
-
+</tbody>
 </table>
 
-
+<code>
+   {{ matrixjson }}
+</code>
 <h1>Cypher examples</h1>
 <h2>Cypher 1</h2>
 <code>
@@ -35,3 +59,4 @@
 </code>
 {% endfor %}
 {% endblock %}
+
