@@ -179,14 +179,27 @@ class PathwayMatrixByGenes():
         return self.matrix
 
     def to_json(self):
-        nodes =[{"id":x} for x in self.matrix[0][1:]]
-        edges = []
+        gene_nodes =[{"id":x, "type":"gene"} for x in self.matrix[0][1:-2] if x!=''] 
+
+        fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
+
+        for i in range(0, len(gene_nodes)):
+            if i < fake_division_between_pathogenic_and_vus:
+
+                classification="pathogenic"
+            else:
+                classification = "unknown"
+            gene_nodes[i]["classification"] = classification
+            
+        pathway_nodes =[{"id":x[0],"type":"pathway"} for x in self.matrix[1:] if x!=''] 
+        nodes = gene_nodes + pathway_nodes
+        edges = []        
         for ridx in range(1,len(self.matrix)):
             row = self.matrix[ridx]
-            for cidx in range(1, len(row)):
+            for cidx in range(1, len(row)-1):
                 cell_value = row[cidx]
                 if cell_value == 1:
-                    edge = {"from":row[0], "to":self.matrix[0][cidx]}
+                    edge = {"source":row[0], "target":self.matrix[0][cidx]}
                     edges.append(edge)
         result_object = {"nodes":nodes, "links":edges}
         return json.dumps(result_object)

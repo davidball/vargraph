@@ -1,7 +1,4 @@
-{% extends "bootstrap/base.html" %}
-{% block content %}
-
-
+<!doctype html>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js" integrity="sha256-k9RyZhvMj2bg0fd8L3IE41t0HpTXnivMoePN/Ksq250=" crossorigin="anonymous"></script>
 <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
 <script src="https://d3js.org/d3-quadtree.v1.min.js"></script>
@@ -28,63 +25,16 @@
 <script src="{{ url_for('static', filename='moduletest.js') }}" type="module"></script>
 <script src="{{ url_for('static', filename='disjointgraph.js') }}" type="module"></script>
 
+<style>
+text {
+    font-family: sans-serif;
+    font-size: 10px;
+  }
 
 
-
-
-<style>.table {
-    max-width:600px;
-}
 </style>
-<h1>Gene List Analysis</h1>
-<ul>
-    {% for g in gene_list %}
-        <li>{{g}}</li>
-    {% endfor %}
-</ul>
-<div id="graph_container"><svg></svg>  /div>
-<h1>Matrix</h1>
-Note: Only showing those pathways matched to more than 1 variant in the set
 
-<table class="table">
 
-{% for row in matrix %}
-{% if loop.first or row[-1]>1 %} 
-{% if loop.first %}
-<thead>
-{% endif %}
-<tr>
-{% for col in row %}
-
-<{% if loop.first%}th{%else%}td{%endif%} style="max-width:170px" {% if loop.last %}class="last_col"{%endif%}>
-{{col}}
-</{% if loop.first%}th{%else%}td{%endif%}>
-{% endfor %}
-</tr>
-{% if loop.first %}
-</thead>
-<tbody>
-{% endif %}
-{% endif %}
-{% endfor %}
-</tbody>
-</table>
-
-<code>
-   {{ matrixjson }}
-</code>
-<h1>Cypher examples</h1>
-<h2>Cypher 1</h2>
-<code>
-    {{ cypher1}}
-</code>
-<h2>Cypher 2</h2>
-{% for c in cypher2 %}
-<h3>Another Cypher</h3>
-<code>
-    {{ c }}
-</code>
-{% endfor %}
 <div id="viewer"><svg id="svg_viewer"></svg></div>
 
 
@@ -97,11 +47,4 @@ d3.json('/static/sample_json.json', function(data) {
 })
 // const abc = await import(moduleSpecifier);
 </script>
-
-
-
-{% endblock %}
-
-
-
-
+<div id="graph_container"></div>

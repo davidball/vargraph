@@ -22,6 +22,7 @@
 <script src="{{ url_for('static', filename='abc.js') }}"></script>
 <script src="{{ url_for('static', filename='reactomejs.js') }}"></script>
 <script src="{{ url_for('static', filename='reactomejsquiz.js') }}"></script>
+<script src="{{ url_for('static', filename='moduletest.js') }}" type="module"></script>
 
 <h1>Enter Gene List</h1>
 <form method='post'>
@@ -107,4 +108,23 @@ var width = 500;
 var height = 500;
 var simulation = d3.forceSimulation(data.nodes);
 //disjointGraph(data);
+
+
+// const abc = await import(moduleSpecifier);
+</script>
+<div id="graph_container"></div>
+
+
+<script src="{{ url_for('static', filename='jsnetworkx.js') }}"></script>
+
+<script type="module" src="{{ url_for('static', filename='jsnetworkx.js') }}"></script>
+
+<script type="module" src="{{ url_for('static', filename='simplegraphuser.js') }}"></script>
+
+<script type="module" src="{{ url_for('static', filename='moduleuser.js') }}"></script>
+
+
+<script>
+g = new  jsnx.completeGraph(6); //jsnx.DiGraph()
+jsnx.draw(g, '#graph_container')
 </script>

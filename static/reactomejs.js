@@ -14,7 +14,7 @@ var rjs = {
         generalQuery:"https://reactome.org/ContentService/data/query/"
     },
     getPathwayList: function(onSuccess){
-        var pathwaylist = jQuery.get({"url":this.urls.pathwayList,success:onSuccess});
+        var pathwaylist = $.get({"url":this.urls.pathwayList,success:onSuccess});
     },
     getPathway:function(id, onSuccess){
         var f = this.cachePathwayData;
