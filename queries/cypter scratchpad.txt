@@ -1,0 +1,1 @@
+MATCH (n:ReferenceEntity)<-[r1:referenceEntity]-(re) where ('NM_001127208' in n.otherIdentifier) 

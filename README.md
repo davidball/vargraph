@@ -6,3 +6,4 @@ To run the flask app in debug mode:
 
 ```FLASK_APP=flaskfe.py FLASK_DEBUG=1 python -m flask run```
 
+Then visit it at http://localhost:5000/

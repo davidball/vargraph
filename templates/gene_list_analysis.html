@@ -85,16 +85,21 @@ Note: Only showing those pathways matched to more than 1 variant in the set
     {{ c }}
 </code>
 {% endfor %}
-<div id="viewer"><svg id="svg_viewer"></svg></div>
+<div id="viewer">
+    <svg id="svg_viewer"></svg>
+</div>
 
 
 <script type="module">
+let reporter_data = {{ matrixjson|safe }};
+window.data = reporter_data;
 import {disjointGraph} from '/static/disjointGraph.js';
-d3.json('/static/sample_json.json', function(data) {
+/*d3.json('/static/sample_json.json', function(data) {
     
     disjointGraph(data);
 
-})
+})*/
+disjointGraph(reporter_data);
 // const abc = await import(moduleSpecifier);
 </script>
 

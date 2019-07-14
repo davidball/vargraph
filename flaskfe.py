@@ -27,6 +27,16 @@ def transcripts(transcript_ids):
 
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
+def render_accession(accession_number):
+    a = mt.PathwayMatrixByGenes([])
+    a.load_from_ngsreporter(accession_number)
+    m = a.build_matrix('matrixtest.csv')
+
+    return render_template('gene_list_analysis.html',
+                           cypher1=mt.pathways_by_gene_list(a.gene_list),
+                           cypher2=[mt.pathways_by_gene_list(
+                               [x]) for x in a.gene_list],
+                           matrix=m, gene_list=a.gene_list, matrixjson = a.to_json())    
 
 def render_gene_list(gene_list):
 
@@ -59,6 +69,10 @@ def samples():
             "</ul>")
 
 
+@app.route('/accession/<string:accession_number>', methods=['GET'])
+def get_accession(accession_number):
+    return render_accession(accession_number)
+
 @app.route('/analysis', methods=['GET'])
 def get_analysis():
     return render_template('analysis.html')
@@ -68,3 +82,13 @@ def get_analysis():
 def post_analysis():
     gene_list = [g.strip() for g in request.form['gene_list'].split("\n")]
     return render_gene_list(gene_list)
+
+
+@app.route('/jsnetworkx', methods=['GET'])
+def jsnetworkx_try():
+    return render_template('jsnetworkx.html')
+
+
+@app.route('/simplegraph', methods=['GET'])
+def simplegraph():
+    return render_template('simplegraph.html')

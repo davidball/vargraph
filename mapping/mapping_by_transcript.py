@@ -4,6 +4,7 @@ from collections import defaultdict
 from neo4j.v1 import GraphDatabase
 import os
 import json
+import requests
 
 def subgraph_by_transcript_ids(transcript_ids, with_statement = False):
     cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
@@ -121,6 +122,16 @@ def pathway_query_from_initial_match_clause(init_clause):
     #strange, filtering by disease seems reasonable but if do so loose tp53 matches
     return ("%s\n%s" % (init_clause, Pathways_main_part))
 
+def pathway_interrelatinships_query_from_initial_match_clause(init_clause):
+    Pathways_main_part = """MATCH (n)<-[r1:referenceEntity]-(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'}) \
+        with n,r1,re \
+        MATCH path1=(re:EntityWithAccessionedSequence{speciesName:'Homo sapiens'})<-[r:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate*]-(c) \
+        with re,r,c,r1,n,path1 \
+        MATCH path2=(p:TopLevelPathway{displayName:'Disease'})-[e:hasEvent*]->(c) return path2"""
+        
+    #strange, filtering by disease seems reasonable but if do so loose tp53 matches
+    return ("%s\n%s" % (init_clause, Pathways_main_part))
+
 def pathways_by_transcript_list(transcript_ids):
     
     return pathway_query_from_initial_match_clause(subgraph_by_transcript_ids(transcript_ids, True))
@@ -134,6 +145,9 @@ def pathways_by_gene_list(genes):
     
     return pathway_query_from_initial_match_clause(subgraph_by_genes(genes, True))
     
+def pathway_interrelatinships_query_from_initial_match_clause(genes):
+    
+    return pathway_query_from_initial_match_clause(subgraph_by_genes(genes, True))
 
 #class ReactomeQuery():
     
@@ -150,7 +164,28 @@ def pathways_by_gene_list(genes):
 class PathwayMatrixByGenes():
     def __init__(self, gene_list):
         self.gene_list = gene_list
-    
+
+    def test():
+        x = PathwayMatrixByGenes([])
+        x.load_from_ngsreporter('18-138-14853')
+        print(x.gene_list)
+        assert x.number_pathogenic == 1
+        assert len(x.gene_list) == 6
+        print(x.gene_list)
+
+    def load_from_ngsreporter(self,accession_number):
+        r = requests.get("https://ngsreporter.mgl.providence.org/api_get_report_json/%s" % accession_number, auth=(os.environ['REPORTERUNAME'], os.environ['REPORTERPWD']),  verify=False)
+        r = r.json()
+        print("genomics_alterations_pathogenic")
+        print(r["genomics_alterations_pathogenic"])
+        print("genomics_alterations_unknown_significance")
+        print(r["genomics_alterations_unknown_significance"])
+        pathogenic = r["genomics_alterations_pathogenic"].split("\n")
+        vus = r["genomics_alterations_unknown_significance"].split("\n")
+        self.number_pathogenic = len(pathogenic)
+        all_variants = pathogenic + vus
+        genes = [x.strip().split(" ")[0] for x in all_variants]
+        self.gene_list = genes
     def build_matrix(self, path = ""):
         results = {}
         pathway_data = defaultdict(list)
@@ -178,6 +213,9 @@ class PathwayMatrixByGenes():
 
         return self.matrix
 
+    def build_matrix_of_pathway_relationships(self):
+        print("coming")
+        
     def to_json(self):
         gene_nodes =[{"id":x, "type":"gene"} for x in self.matrix[0][1:-2] if x!=''] 
 
@@ -191,7 +229,7 @@ class PathwayMatrixByGenes():
                 classification = "unknown"
             gene_nodes[i]["classification"] = classification
             
-        pathway_nodes =[{"id":x[0],"type":"pathway"} for x in self.matrix[1:] if x!=''] 
+        pathway_nodes =[{"id":x[0],"type":"pathway"} for x in self.matrix[:] if x!=''] 
         nodes = gene_nodes + pathway_nodes
         edges = []        
         for ridx in range(1,len(self.matrix)):
@@ -201,8 +239,25 @@ class PathwayMatrixByGenes():
                 if cell_value == 1:
                     edge = {"source":row[0], "target":self.matrix[0][cidx]}
                     edges.append(edge)
+
+        pathway_edges = self.pathway_interrelationships()
+
+        for rel in pathway_edges:
+            edge = {"source":rel[0], "target":rel[1]}
+            edges.append(edge)
+
         result_object = {"nodes":nodes, "links":edges}
         return json.dumps(result_object)
+
+    def pathway_interrelationships(self):
+        ids = ",".join([str(n.id) for k,n in self.pathway_data.items()])
+        cy = "MATCH path=()-[:hasEvent]->(n) where id(n) in [%s] return path;" % ids
+        r = runqueryraw(cy)
+        g = r.graph()
+        #generate tuples of from node node, to node name, 
+        endpoints = [[n.start_node['displayName'],n.end_node['displayName']]  for n in g.relationships]
+        return endpoints
+
 
     def matrix_pathways_by_genes(self):        
         gene_keys = self.gene_pathways.keys()
@@ -237,9 +292,12 @@ class PathwayMatrixByGenes():
             for row in self.matrix:
                 writer.writerow(row)                
 
-def runquery(cypertxt):
-    return REACTOME.runquery(cypertxt)
-    
+def runquery(cyphertext):
+    return REACTOME.runquery(cyphertext)
+
+def runqueryraw(cyphertext):
+    return REACTOME.runqueryraw(cyphertext)
+
 #print(runquery(pathways_by_gene_list(['PIK3R1']))) 
 #x = runquery(pathways_by_gene_list(['PIK3R1']))
 #n_ids = [r[6].id for r in x]
@@ -333,12 +391,13 @@ class ReactomeConnector():
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
 
-    def runquery(self, cypertxt):
-        print("about to run query")
-        result = self._session.run(cypertxt)
-        print("about to ask for values()")
+    def runquery(self, cyphertext):        
+        result = self._session.run(cyphertext)
         results = result.values()
         return results
+
+    def runqueryraw(self, cyphertext):
+        return self._session.run(cyphertext)
 
 
 REACTOME = ReactomeConnector()
