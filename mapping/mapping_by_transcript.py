@@ -293,10 +293,10 @@ class PathwayMatrixByGenes():
                 writer.writerow(row)                
 
 def runquery(cyphertext):
-    return REACTOME.runquery(cyphertext)
+    return ReactomeConnector.new().runquery(cyphertext)
 
 def runqueryraw(cyphertext):
-    return REACTOME.runqueryraw(cyphertext)
+    return ReactomeConnector.new().runqueryraw(cyphertext)
 
 #print(runquery(pathways_by_gene_list(['PIK3R1']))) 
 #x = runquery(pathways_by_gene_list(['PIK3R1']))
@@ -387,7 +387,7 @@ def dostuff():
 
 
 class ReactomeConnector():
-    def __init__(self, uri="bolt://0.0.0.0:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
+    def __init__(self, uri="bolt://neo4j:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
 

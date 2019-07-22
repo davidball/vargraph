@@ -13,6 +13,7 @@ from flask_bootstrap import Bootstrap
 app = Flask(__name__)
 Bootstrap(app)
 
+
 @app.route("/")
 def hello():
     return samples()
@@ -28,6 +29,7 @@ def transcripts(transcript_ids):
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
 def render_accession(accession_number):
+    return 'hello world'
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
     m = a.build_matrix('matrixtest.csv')
@@ -92,3 +94,5 @@ def jsnetworkx_try():
 @app.route('/simplegraph', methods=['GET'])
 def simplegraph():
     return render_template('simplegraph.html')
+
+app.run(host='0.0.0.0')
