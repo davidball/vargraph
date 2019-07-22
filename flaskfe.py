@@ -7,17 +7,42 @@
 from flask import Flask
 from flask import request
 from flask import render_template
+from flask import session
+from flask import flash
+import os
+
 import mapping.mapping_by_transcript as mt
 from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 Bootstrap(app)
+#app.run(host='0.0.0.0')
+app.secret_key = os.urandom(12)
 
 
 @app.route("/")
-def hello():
-    return samples()
+def home():
+    if not session.get('logged_in'):
+        return render_template('login.html')
+    else:
+        return samples()
 
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    pwd = os.environ.get('VARGRAPHPWD')
+    if pwd == None:
+        flash("Authentication not configured. Login is impossible.")
+    else:
+        if request.form['password'] == pwd and request.form['username'] == 'admin':
+            session['logged_in'] = True
+        else:
+            flash('wrong password!')
+    return home()
+
+@app.route("/logout")
+def logout():
+    session['logged_in'] = False
+    return home()
 
 @app.route("/transcripts/<string:transcript_ids>")
 def transcripts(transcript_ids):
