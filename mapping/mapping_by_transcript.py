@@ -242,18 +242,33 @@ class PathwayMatrixByGenes():
 
         pathway_edges = self.pathway_interrelationships()
 
-        for rel in pathway_edges:
-            edge = {"source":rel[0], "target":rel[1]}
-            edges.append(edge)
+        # for rel in pathway_edges:
+        #     edge = {"source":rel[0], "target":rel[1]}
+        #     edges.append(edge)
+
 
         result_object = {"nodes":nodes, "links":edges}
+
+        result_object = self.remove_orphan_edges(result_object)
+
         return json.dumps(result_object)
+
+    def remove_orphan_edges(self, result_object):
+        nodes = result_object["nodes"]
+        nodes_by_id = {x['id']:True for x in nodes}
+        new_edges = []
+        for edge in result_object["links"]:
+            if edge['source'] in nodes_by_id and edge['target'] in nodes_by_id:
+                new_edges.append(edge)
+        return {"nodes":nodes, "links":new_edges}
+
 
     def pathway_interrelationships(self):
         ids = ",".join([str(n.id) for k,n in self.pathway_data.items()])
         cy = "MATCH path=()-[:hasEvent]->(n) where id(n) in [%s] return path;" % ids
-        r = runqueryraw(cy)
-        g = r.graph()
+        g = runquery_asgraph(cy)
+        #v =r.values()
+        #g = r.graph()
         #generate tuples of from node node, to node name, 
         endpoints = [[n.start_node['displayName'],n.end_node['displayName']]  for n in g.relationships]
         return endpoints
@@ -293,10 +308,13 @@ class PathwayMatrixByGenes():
                 writer.writerow(row)                
 
 def runquery(cyphertext):
-    return ReactomeConnector.new().runquery(cyphertext)
+    return ReactomeConnector().runquery(cyphertext)
 
 def runqueryraw(cyphertext):
-    return ReactomeConnector.new().runqueryraw(cyphertext)
+    return ReactomeConnector().runqueryraw(cyphertext)
+
+def runquery_asgraph(cyphertext):
+    return ReactomeConnector().runqueryraw_asgraph(cyphertext)
 
 #print(runquery(pathways_by_gene_list(['PIK3R1']))) 
 #x = runquery(pathways_by_gene_list(['PIK3R1']))
@@ -387,7 +405,7 @@ def dostuff():
 
 
 class ReactomeConnector():
-    def __init__(self, uri="bolt://neo4j:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
+    def __init__(self, uri="bolt://0.0.0.0:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
 
@@ -399,6 +417,8 @@ class ReactomeConnector():
     def runqueryraw(self, cyphertext):
         return self._session.run(cyphertext)
 
+    def runqueryraw_asgraph(self, cyphertext):
+        return self._session.run(cyphertext).graph()
 
 REACTOME = ReactomeConnector()
 

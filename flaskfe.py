@@ -54,7 +54,7 @@ def transcripts(transcript_ids):
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
 def render_accession(accession_number):
-    return 'hello world'
+    
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
     m = a.build_matrix('matrixtest.csv')
