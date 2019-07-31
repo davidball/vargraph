@@ -10,6 +10,7 @@ from flask import render_template
 from flask import session
 from flask import flash
 import os
+from healthcheck import healthcheck
 
 import mapping.mapping_by_transcript as mt
 from flask_bootstrap import Bootstrap
@@ -54,7 +55,6 @@ def transcripts(transcript_ids):
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
 def render_accession(accession_number):
-    
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
     m = a.build_matrix('matrixtest.csv')
@@ -119,5 +119,10 @@ def jsnetworkx_try():
 @app.route('/simplegraph', methods=['GET'])
 def simplegraph():
     return render_template('simplegraph.html')
+
+@app.route('/test', methods=['GET'])
+def test():
+   print("in test route about to healthcheck")
+   return "I am here. %s" % healthcheck()
 
 app.run(host='0.0.0.0')

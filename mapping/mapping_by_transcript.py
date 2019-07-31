@@ -415,6 +415,7 @@ class ReactomeConnector():
         return results
 
     def runqueryraw(self, cyphertext):
+        print("about to runqueryraw %s" % cyphertext)
         return self._session.run(cyphertext)
 
     def runqueryraw_asgraph(self, cyphertext):

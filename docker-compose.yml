@@ -16,15 +16,19 @@ services:
       - /Users/p491748/projects/vargraph/graphdbs/reactome/datafordocker:/data
   
   app:
-    image: vargraph
+    #image: .
+    build: .
     environment:
       - REACTOME_PWD
       - REPORTERUNAME
       - REPORTERPWD
+      - VARGRAPHPWD
     ports:
-      - "172.17.0.1:5001:5000"
-    #  - "5001:5000"
+     # - "172.17.0.1:5001:5000"
+      - "5001:5000"
     depends_on:
       - "neo4j"
 #    command: ["./wait-for-it.sh", "neo4j:7474", "--", "FLASK_APP=flaskfe.py","python", "-m", "flask", "run" ]
     restart: always
+    volumes:
+      - .:/vargraph 
