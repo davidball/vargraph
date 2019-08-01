@@ -1,0 +1,7 @@
+FROM neo4j:latest
+
+EXPOSE 7474
+EXPOSE 7473
+EXPOSE 7687
+
+COPY graphdbs/reactome/datafordocker /data
