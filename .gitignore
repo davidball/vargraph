@@ -3,3 +3,4 @@ graphdbs/
 *.csv
 *.json
 *.pyc
+.DS_Store
