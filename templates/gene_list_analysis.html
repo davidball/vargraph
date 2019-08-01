@@ -42,6 +42,11 @@
         <li>{{g}}</li>
     {% endfor %}
 </ul>
+<div id="external_links">
+Other Links
+<a target="_new" href="https://apps.pathwaycommons.org/interactions?source={% for g in gene_list %}{{g}}%2C{% endfor %}">PathwayCommons.org Interactions</a>
+<a target="_new" href="http://170.220.59.155:7474/browser/">Raw Neo4j Reactome Queries</a>
+</div>
 <div id="graph_container"><svg></svg>  </div>
 <h1>Matrix</h1>
 Note: Only showing those pathways matched to more than 1 variant in the set
