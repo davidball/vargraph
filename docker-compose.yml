@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   neo4j:
-    image: us.gcr.io/psjh-235004/neo4j_reactome
+    image: us.gcr.io/psjh-235004/neo4j_reactome:latest
     #network_mode: host
     restart: always
     environment:
@@ -17,7 +17,7 @@ services:
     #  - /Users/p491748/projects/vargraph/graphdbs/reactome/datafordocker:/data
   
   app:
-    #image: .
+    #image: vargraph
     build: .
     environment:
       - REACTOME_PWD
@@ -25,11 +25,11 @@ services:
       - REPORTERPWD
       - VARGRAPHPWD
     ports:
-     # - "172.17.0.1:5001:5000"
-      - "5001:5000"
+    #  - "172.17.0.1:5000:5000"
+      - "5000:5000"
     depends_on:
       - "neo4j"
 #    command: ["./wait-for-it.sh", "neo4j:7474", "--", "FLASK_APP=flaskfe.py","python", "-m", "flask", "run" ]
     restart: always
     volumes:
-      - .:/vargraph 
+      - .:/vargraph

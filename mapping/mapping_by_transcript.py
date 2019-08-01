@@ -443,12 +443,8 @@ class ReactomeConnector():
 
 #REACTOME = ReactomeConnector()
 
-if __name__ == "__main__":
-    
-    dostuff()
-    
-
-    
+if __name__ == "__main__":    
+    dostuff()    
     user='neo4j'
     password = 'reactome'
     password = os.environ['REACTOME_PWD']

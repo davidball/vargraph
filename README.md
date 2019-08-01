@@ -31,3 +31,14 @@ To communicate with NgsReporter set environment variables:
 # Environment Variables
 REPORTERUNAME
 REPORTERPWD
+
+
+#Docker Setup
+
+You may need to configure your docker authentication first:
+`gcloud auth configure-docker`
+
+
+`docker pull us.gcr.io/psjh-235004/neo4j_reactome`
+
+Uses a docker image that includes the Neo4j database from reactome in it

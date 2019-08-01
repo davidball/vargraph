@@ -8,7 +8,7 @@ import requests
 
 def healthcheck():
   print("healthcheck begin")
-  uri="bolt://0.0.0.0:7687"
+  uri="bolt://neo4j:7687"
   user='neo4j'
   password = os.environ['REACTOME_PWD']
   _driver = GraphDatabase.driver(uri, auth=(user, password))
