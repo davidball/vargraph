@@ -5,6 +5,10 @@ from neo4j.v1 import GraphDatabase
 import os
 import json
 import requests
+import logging
+
+app_name = 'vargraph'
+log = logging.getLogger(app_name) # + "." + __name__)
 
 def subgraph_by_transcript_ids(transcript_ids, with_statement = False):
     cypher_list ="(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(transcript_ids)
@@ -174,25 +178,34 @@ class PathwayMatrixByGenes():
         print(x.gene_list)
 
     def load_from_ngsreporter(self,accession_number):
+        log.debug("begin load_from_ngsreporter %s" % accession_number)
         r = requests.get("https://ngsreporter.mgl.providence.org/api_get_report_json/%s" % accession_number, auth=(os.environ['REPORTERUNAME'], os.environ['REPORTERPWD']),  verify=False)
         r = r.json()
-        print("genomics_alterations_pathogenic")
-        print(r["genomics_alterations_pathogenic"])
-        print("genomics_alterations_unknown_significance")
-        print(r["genomics_alterations_unknown_significance"])
+        log.debug(r)
+        log.debug("genomics_alterations_pathogenic")
+        log.debug(r["genomics_alterations_pathogenic"])
+        log.debug("genomics_alterations_unknown_significance")
+        log.debug(r["genomics_alterations_unknown_significance"])
         pathogenic = r["genomics_alterations_pathogenic"].split("\n")
         vus = r["genomics_alterations_unknown_significance"].split("\n")
         self.number_pathogenic = len(pathogenic)
         all_variants = pathogenic + vus
         genes = [x.strip().split(" ")[0] for x in all_variants]
         self.gene_list = genes
+        log.debug("reached end of load_from_ngsreporter")
+
     def build_matrix(self, path = ""):
+        log.debug("begin build_matrix dubeg")
         results = {}
         pathway_data = defaultdict(list)
         pathway_genes = defaultdict(list)
         gene_pathways =  {gene:[] for gene in self.gene_list}
+
+        log.debug("Count of self.gene_list=%i" % len(self.gene_list))
         for gene in self.gene_list:
+            log.info("about to run pathways_by_gene_list for %s" % gene )
             pathways = runquery(pathways_by_gene_list([gene]))
+            log.info("ran it, len pathways is %i" % len(pathways))
             results[gene] = pathways
             
             for row in pathways:
@@ -405,22 +418,30 @@ def dostuff():
 
 
 class ReactomeConnector():
-    def __init__(self, uri="bolt://0.0.0.0:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
+    def __init__(self, uri="bolt://neo4j:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
+        log.info("about to try to connect to %s with u=%s and pwd=%s" % ( uri, user, password))
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
+        log.info("Reached end of ReactomeConnector.__init__")
 
-    def runquery(self, cyphertext):        
-        result = self._session.run(cyphertext)
+    def runquery(self, cyphertext):
+        log.debug("begin plain 'runquery' method")
+        result = self.runqueryraw(cyphertext)
         results = result.values()
+        log.debug("Finished query, %i values" % len(results) )
         return results
 
     def runqueryraw(self, cyphertext):
-        return self._session.run(cyphertext)
+        log.debug("About to run query:")
+        log.debug(cyphertext)
+        r = self._session.run(cyphertext)
+        log.debug("finished query")        
+        return r
 
     def runqueryraw_asgraph(self, cyphertext):
-        return self._session.run(cyphertext).graph()
+        return self.runqueryraw().graph()
 
-REACTOME = ReactomeConnector()
+#REACTOME = ReactomeConnector()
 
 if __name__ == "__main__":
     
