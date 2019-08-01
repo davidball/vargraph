@@ -10,15 +10,27 @@ from flask import render_template
 from flask import session
 from flask import flash
 import os
+import logging
 from healthcheck import healthcheck
 
 import mapping.mapping_by_transcript as mt
 from flask_bootstrap import Bootstrap
+import sys
 
-app = Flask(__name__)
+
+app_name = 'vargraph'
+
+app = Flask(app_name)
 Bootstrap(app)
 #app.run(host='0.0.0.0')
 app.secret_key = os.urandom(12)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter(
+   '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.DEBUG)
+
 
 
 @app.route("/")
@@ -55,10 +67,12 @@ def transcripts(transcript_ids):
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
 def render_accession(accession_number):
+    print("begin render_accession", file=sys.stderr)
+    app.logger.info('via loggerxxxs failed to log in')
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
     m = a.build_matrix('matrixtest.csv')
-
+    print("built matrix", file=sys.stderr)
     return render_template('gene_list_analysis.html',
                            cypher1=mt.pathways_by_gene_list(a.gene_list),
                            cypher2=[mt.pathways_by_gene_list(
