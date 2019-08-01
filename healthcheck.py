@@ -14,7 +14,7 @@ def healthcheck():
   _driver = GraphDatabase.driver(uri, auth=(user, password))
   _session = _driver.session()
   print("about to test query")
-  values = _session.run('MATCH (n) RETURN n Limit 10;').values()
+  values = _session.run('MATCH (n:PhysicalEntity) RETURN n Limit 10;').values()
   print(values)
   print("tested_query")
   return values

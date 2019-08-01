@@ -200,8 +200,12 @@ class PathwayMatrixByGenes():
         pathway_data = defaultdict(list)
         pathway_genes = defaultdict(list)
         gene_pathways =  {gene:[] for gene in self.gene_list}
+
+        log.debug("Count of self.gene_list=%i" % len(self.gene_list))
         for gene in self.gene_list:
+            log.info("about to run pathways_by_gene_list for %s" % gene )
             pathways = runquery(pathways_by_gene_list([gene]))
+            log.info("ran it, len pathways is %i" % len(pathways))
             results[gene] = pathways
             
             for row in pathways:
@@ -415,22 +419,29 @@ def dostuff():
 
 class ReactomeConnector():
     def __init__(self, uri="bolt://neo4j:7687",user='neo4j',password = os.environ['REACTOME_PWD']):
+        log.info("about to try to connect to %s with u=%s and pwd=%s" % ( uri, user, password))
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
+        log.info("Reached end of ReactomeConnector.__init__")
 
-    def runquery(self, cyphertext):        
-        result = self._session.run(cyphertext)
+    def runquery(self, cyphertext):
+        log.debug("begin plain 'runquery' method")
+        result = self.runqueryraw(cyphertext)
         results = result.values()
+        log.debug("Finished query, %i values" % len(results) )
         return results
 
     def runqueryraw(self, cyphertext):
-        print("about to runqueryraw %s" % cyphertext)
-        return self._session.run(cyphertext)
+        log.debug("About to run query:")
+        log.debug(cyphertext)
+        r = self._session.run(cyphertext)
+        log.debug("finished query")        
+        return r
 
     def runqueryraw_asgraph(self, cyphertext):
-        return self._session.run(cyphertext).graph()
+        return self.runqueryraw().graph()
 
-REACTOME = ReactomeConnector()
+#REACTOME = ReactomeConnector()
 
 if __name__ == "__main__":
     

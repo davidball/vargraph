@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   neo4j:
-    image: neo4j:latest
+    image: us.gcr.io/psjh-235004/neo4j_reactome
     #network_mode: host
     restart: always
     environment:
@@ -11,9 +11,10 @@ services:
     ports:
       - "7474:7474"
       - "7473:7473"
+      #- "172.17.0.1:7687:7687"
       - "7687:7687"
-    volumes:
-      - /Users/p491748/projects/vargraph/graphdbs/reactome/datafordocker:/data
+    #volumes:
+    #  - /Users/p491748/projects/vargraph/graphdbs/reactome/datafordocker:/data
   
   app:
     #image: .
