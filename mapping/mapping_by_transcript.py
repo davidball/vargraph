@@ -439,7 +439,7 @@ class ReactomeConnector():
         return r
 
     def runqueryraw_asgraph(self, cyphertext):
-        return self.runqueryraw().graph()
+        return self.runqueryraw(cyphertext).graph()
 
 #REACTOME = ReactomeConnector()
 
