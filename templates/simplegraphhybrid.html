@@ -1,0 +1,670 @@
+<!doctype html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js" integrity="sha256-k9RyZhvMj2bg0fd8L3IE41t0HpTXnivMoePN/Ksq250=" crossorigin="anonymous"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-quadtree.v1.min.js"></script>
+<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+<script src="https://d3js.org/d3-force.v2.min.js"></script>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+<script src="https://d3js.org/d3-drag.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-ease.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+
+<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+<script src="https://d3js.org/d3-transition.v1.min.js"></script>
+<script src="https://d3js.org/d3-force.v1.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='abc.js') }}"></script>
+<script src="{{ url_for('static', filename='reactomejs.js') }}"></script>
+<script src="{{ url_for('static', filename='reactomejsquiz.js') }}"></script>
+<script src="{{ url_for('static', filename='moduletest.js') }}" type="module"></script>
+
+
+text {
+    font-family: sans-serif;
+    font-size: 10px;
+  }
+
+
+
+begin viewer
+<div id="viewer"><svg id="svg_viewer"></svg></div>
+end viewer
+<script>
+
+
+function disjointGraph(data) {
+
+
+    let drag = simulation => {
+  
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+  
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  
+  return d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+}
+
+
+    //derived from https://observablehq.com/@d3/disjoint-force-directed-graph
+
+  const links = data.links.map(d => Object.create(d));
+  const nodes = data.nodes.map(d => Object.create(d));
+
+  const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.id))
+      .force("charge", d3.forceManyBody())
+      .force("x", d3.forceX())
+      .force("y", d3.forceY());
+      
+
+  const svg = d3.select('svg')
+      .attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+  const link = svg.append("g")
+      .attr("stroke", "#999")
+      .attr("stroke-opacity", 0.6)
+    .selectAll("line")
+    .data(links)
+    .join("line")
+      .attr("stroke-width", d => Math.sqrt(d.value));
+    let color = 'red';
+
+/*
+  const node = svg.append("g")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5)
+    .selectAll("g")
+    .data(nodes).enter().append('g');
+    */
+    var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("g")
+    .data(nodes)
+    .enter().append("g");
+
+    let circles = node.append("circle")
+      .attr("r", 5)
+      .attr("fill", color)
+      .call(drag(simulation));
+
+      let texts = node.append('text').text(function(d){return d.id;}).attr('x',6).attr('y',3);
+      //.append('text').text(function(d){return d.id;});
+      
+      node.append("title")
+      .text(function(d) { return d.id; });
+      
+
+  node.append("title")
+      .text(d => d.id);
+
+  simulation.on("tick", () => {
+    link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+    node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+  });
+
+//  invalidation.then(() => simulation.stop());
+
+  //return svg.node();
+}
+
+data = {
+    "nodes": [
+        {
+            "id": "APC"
+        },
+        {
+            "id": "BRIP1"
+        },
+        {
+            "id": "CTNNB1"
+        },
+        {
+            "id": "PIK3R1"
+        },
+        {
+            "id": "TP53"
+        },
+        {
+            "id": "CHEK1"
+        },
+        {
+            "id": "DNMT3A"
+        },
+        {
+            "id": "FGF2"
+        },
+        {
+            "id": "PALB2"
+        },
+        {
+            "id": "RAD54L"
+        },
+        {
+            "id": "RB1"
+        },
+        {
+            "id": "TET2"
+        },
+        {
+            "id": ""
+        },
+        {
+            "id": "Count"
+        },
+        {
+            "id": "Disease"
+        },
+        {
+            "id": "Diseases of signal transduction"
+        },
+        {
+            "id": "Signaling by WNT in cancer"
+        },
+        {
+            "id": "phosphorylation site mutants of CTNNB1 are not targeted to the proteasome by the destruction complex"
+        },
+        {
+            "id": "T41 mutants of beta-catenin aren't phosphorylated"
+        },
+        {
+            "id": "S33 mutants of beta-catenin aren't phosphorylated"
+        },
+        {
+            "id": "S37 mutants of beta-catenin aren't phosphorylated"
+        },
+        {
+            "id": "S45 mutants of beta-catenin aren't phosphorylated"
+        },
+        {
+            "id": "AMER1 mutants destabilize the destruction complex"
+        },
+        {
+            "id": "Truncations of AMER1 destabilize the destruction complex"
+        },
+        {
+            "id": "AXIN mutants destabilize the destruction complex, activating WNT signaling"
+        },
+        {
+            "id": "AXIN missense mutants destabilize the destruction complex"
+        },
+        {
+            "id": "Misspliced GSK3beta mutants stabilize beta-catenin"
+        },
+        {
+            "id": "truncated APC mutants destabilize the destruction complex"
+        },
+        {
+            "id": "APC truncation mutants are not K63 polyubiquitinated"
+        },
+        {
+            "id": "APC truncation mutants have impaired AXIN binding"
+        },
+        {
+            "id": "Infectious disease"
+        },
+        {
+            "id": "Listeria monocytogenes entry into host cells"
+        },
+        {
+            "id": "InlA-mediated entry of Listeria monocytogenes into host cells"
+        },
+        {
+            "id": "PI3K/AKT Signaling in Cancer"
+        },
+        {
+            "id": "Constitutive Signaling by Aberrant PI3K in Cancer"
+        },
+        {
+            "id": "Signaling by FGFR in disease"
+        },
+        {
+            "id": "Signaling by FGFR1 in disease"
+        },
+        {
+            "id": "Signaling by FGFR3 in disease"
+        },
+        {
+            "id": "Signaling by FGFR3 fusions in cancer"
+        },
+        {
+            "id": "Signaling by FGFR3 point mutants in cancer"
+        },
+        {
+            "id": "Signaling by FGFR2 in disease"
+        },
+        {
+            "id": "Signaling by FGFR4 in disease"
+        },
+        {
+            "id": "Signaling by EGFR in Cancer"
+        },
+        {
+            "id": "Signaling by Ligand-Responsive EGFR Variants in Cancer"
+        },
+        {
+            "id": "Constitutive Signaling by Ligand-Responsive EGFR Cancer Variants"
+        },
+        {
+            "id": "Signaling by EGFRvIII in Cancer"
+        },
+        {
+            "id": "Constitutive Signaling by EGFRvIII"
+        },
+        {
+            "id": "FGFR1 mutant receptor activation"
+        },
+        {
+            "id": "Signaling by cytosolic FGFR1 fusion mutants"
+        },
+        {
+            "id": "FGFR3 mutant receptor activation"
+        },
+        {
+            "id": "Signaling by activated point mutants of FGFR3"
+        },
+        {
+            "id": "Signaling by activated point mutants of FGFR1"
+        },
+        {
+            "id": "FGFR2 mutant receptor activation"
+        },
+        {
+            "id": "Activated point mutants of FGFR2"
+        },
+        {
+            "id": "Signaling by FGFR2 IIIa TM"
+        }
+    ],
+    "links": [
+        {
+            "source": "Disease",
+            "target": "APC"
+        },
+        {
+            "source": "Disease",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "Disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Disease",
+            "target": "FGF2"
+        },
+        {
+            "source": "Diseases of signal transduction",
+            "target": "APC"
+        },
+        {
+            "source": "Diseases of signal transduction",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "Diseases of signal transduction",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Diseases of signal transduction",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by WNT in cancer",
+            "target": "APC"
+        },
+        {
+            "source": "Signaling by WNT in cancer",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "phosphorylation site mutants of CTNNB1 are not targeted to the proteasome by the destruction complex",
+            "target": "APC"
+        },
+        {
+            "source": "phosphorylation site mutants of CTNNB1 are not targeted to the proteasome by the destruction complex",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "T41 mutants of beta-catenin aren't phosphorylated",
+            "target": "APC"
+        },
+        {
+            "source": "T41 mutants of beta-catenin aren't phosphorylated",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "S33 mutants of beta-catenin aren't phosphorylated",
+            "target": "APC"
+        },
+        {
+            "source": "S33 mutants of beta-catenin aren't phosphorylated",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "S37 mutants of beta-catenin aren't phosphorylated",
+            "target": "APC"
+        },
+        {
+            "source": "S37 mutants of beta-catenin aren't phosphorylated",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "S45 mutants of beta-catenin aren't phosphorylated",
+            "target": "APC"
+        },
+        {
+            "source": "S45 mutants of beta-catenin aren't phosphorylated",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "AMER1 mutants destabilize the destruction complex",
+            "target": "APC"
+        },
+        {
+            "source": "AMER1 mutants destabilize the destruction complex",
+            "target": "Count"
+        },
+        {
+            "source": "Truncations of AMER1 destabilize the destruction complex",
+            "target": "APC"
+        },
+        {
+            "source": "Truncations of AMER1 destabilize the destruction complex",
+            "target": "Count"
+        },
+        {
+            "source": "AXIN mutants destabilize the destruction complex, activating WNT signaling",
+            "target": "APC"
+        },
+        {
+            "source": "AXIN mutants destabilize the destruction complex, activating WNT signaling",
+            "target": "Count"
+        },
+        {
+            "source": "AXIN missense mutants destabilize the destruction complex",
+            "target": "APC"
+        },
+        {
+            "source": "AXIN missense mutants destabilize the destruction complex",
+            "target": "Count"
+        },
+        {
+            "source": "Misspliced GSK3beta mutants stabilize beta-catenin",
+            "target": "APC"
+        },
+        {
+            "source": "Misspliced GSK3beta mutants stabilize beta-catenin",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "truncated APC mutants destabilize the destruction complex",
+            "target": "APC"
+        },
+        {
+            "source": "truncated APC mutants destabilize the destruction complex",
+            "target": "Count"
+        },
+        {
+            "source": "APC truncation mutants are not K63 polyubiquitinated",
+            "target": "APC"
+        },
+        {
+            "source": "APC truncation mutants are not K63 polyubiquitinated",
+            "target": "Count"
+        },
+        {
+            "source": "APC truncation mutants have impaired AXIN binding",
+            "target": "APC"
+        },
+        {
+            "source": "APC truncation mutants have impaired AXIN binding",
+            "target": "Count"
+        },
+        {
+            "source": "Infectious disease",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "Infectious disease",
+            "target": "Count"
+        },
+        {
+            "source": "Listeria monocytogenes entry into host cells",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "Listeria monocytogenes entry into host cells",
+            "target": "Count"
+        },
+        {
+            "source": "InlA-mediated entry of Listeria monocytogenes into host cells",
+            "target": "CTNNB1"
+        },
+        {
+            "source": "InlA-mediated entry of Listeria monocytogenes into host cells",
+            "target": "Count"
+        },
+        {
+            "source": "PI3K/AKT Signaling in Cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "PI3K/AKT Signaling in Cancer",
+            "target": "FGF2"
+        },
+        {
+            "source": "Constitutive Signaling by Aberrant PI3K in Cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Constitutive Signaling by Aberrant PI3K in Cancer",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR in disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR in disease",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR1 in disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR1 in disease",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR3 in disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR3 in disease",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR3 fusions in cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR3 fusions in cancer",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by FGFR3 point mutants in cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR3 point mutants in cancer",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR2 in disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR2 in disease",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR4 in disease",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by FGFR4 in disease",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by EGFR in Cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by EGFR in Cancer",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by Ligand-Responsive EGFR Variants in Cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by Ligand-Responsive EGFR Variants in Cancer",
+            "target": "Count"
+        },
+        {
+            "source": "Constitutive Signaling by Ligand-Responsive EGFR Cancer Variants",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Constitutive Signaling by Ligand-Responsive EGFR Cancer Variants",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by EGFRvIII in Cancer",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by EGFRvIII in Cancer",
+            "target": "Count"
+        },
+        {
+            "source": "Constitutive Signaling by EGFRvIII",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Constitutive Signaling by EGFRvIII",
+            "target": "Count"
+        },
+        {
+            "source": "FGFR1 mutant receptor activation",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "FGFR1 mutant receptor activation",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by cytosolic FGFR1 fusion mutants",
+            "target": "PIK3R1"
+        },
+        {
+            "source": "Signaling by cytosolic FGFR1 fusion mutants",
+            "target": "Count"
+        },
+        {
+            "source": "FGFR3 mutant receptor activation",
+            "target": "FGF2"
+        },
+        {
+            "source": "FGFR3 mutant receptor activation",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by activated point mutants of FGFR3",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by activated point mutants of FGFR3",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by activated point mutants of FGFR1",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by activated point mutants of FGFR1",
+            "target": "Count"
+        },
+        {
+            "source": "FGFR2 mutant receptor activation",
+            "target": "FGF2"
+        },
+        {
+            "source": "FGFR2 mutant receptor activation",
+            "target": "Count"
+        },
+        {
+            "source": "Activated point mutants of FGFR2",
+            "target": "FGF2"
+        },
+        {
+            "source": "Activated point mutants of FGFR2",
+            "target": "Count"
+        },
+        {
+            "source": "Signaling by FGFR2 IIIa TM",
+            "target": "FGF2"
+        },
+        {
+            "source": "Signaling by FGFR2 IIIa TM",
+            "target": "Count"
+        }
+    ]
+};
+
+var width = 500;
+var height = 500;
+var simulation = d3.forceSimulation(data.nodes);
+disjointGraph(data);
+
+
+// const abc = await import(moduleSpecifier);
+</script>
+<div id="graph_container"></div>
+
+<svg></svg>
+
+<script>
+
+
+</script>
