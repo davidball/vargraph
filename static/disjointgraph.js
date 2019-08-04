@@ -75,7 +75,7 @@ function cleanData(data) {
     let circles = node.append("circle")
       .attr("r", 5)
       .attr("fill", function(d){if (d.type=="pathway")
-      {return 'blue'} 
+      {return 'white'} 
       else if(d.type=="gene") {
           if (d.classification=="pathogenic") {
             return 'red'

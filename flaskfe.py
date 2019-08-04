@@ -67,17 +67,41 @@ def transcripts(transcript_ids):
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
 def render_accession(accession_number):
-    print("begin render_accession", file=sys.stderr)
-    app.logger.info('via loggerxxxs failed to log in')
+    app.logger.info("begin render_accession")
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
-    m = a.build_matrix('matrixtest.csv')
-    print("built matrix", file=sys.stderr)
+    filename = cache_file_name(accession_number)
+    matrix_filename =  filename + '.matrix.csv'
+    if os.path.exists(filename) and os.path.exists(matrix_filename):
+        app.logger.info("found in cache, skip building matrix")
+        with open(filename,'r') as f:
+            accn_json = f.read()
+        matrix = a.read_matrix(matrix_filename)
+        #matrix = a.build_matrix(matrix_filename+"2")
+        app.logger.info("where is next line?")
+        #app.logger.info("whats diff %i %i" % (len(matrixc),len(matrix)))
+        #app.logger.info("where was last line?")
+        # for i in range(len(matrix)):
+        #     app.logger.info("c one:")
+        #     app.logger.info(matrixc[i])
+        #     app.logger.info("fresh one")
+        #     app.logger.info(matrix[i])
+    else:
+        app.logger.info("not in cache, building matrix")
+        
+        matrix = a.build_matrix(matrix_filename)
+        accn_json = a.to_json()
+        with open(filename,'w') as f:
+            f.write(accn_json)
+        
     return render_template('gene_list_analysis.html',
                            cypher1=mt.pathways_by_gene_list(a.gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in a.gene_list],
-                           matrix=m, gene_list=a.gene_list, matrixjson = a.to_json())    
+                           matrix=matrix, gene_list=a.gene_list, matrixjson = accn_json)    
+
+def cache_file_name(accn):
+    return "accession_json_cache/%s.json" % accn.replace('.','_').replace('/','_') 
 
 def render_gene_list(gene_list):
 

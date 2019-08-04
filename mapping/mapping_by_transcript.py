@@ -177,19 +177,29 @@ class PathwayMatrixByGenes():
         assert len(x.gene_list) == 6
         print(x.gene_list)
 
+    def reporter_variant_list_to_genes(self,reporter_results, fldname):
+
+        if fldname in reporter_results:
+            val = reporter_results[fldname]
+            if val:
+                all = val.split("\n")
+                return [x.strip().split(" ")[0].strip() for x in all]
+            else:
+                return []
+        else:
+            return []
+
     def load_from_ngsreporter(self,accession_number):
         log.debug("begin load_from_ngsreporter %s" % accession_number)
         r = requests.get("https://ngsreporter.mgl.providence.org/api_get_report_json/%s" % accession_number, auth=(os.environ['REPORTERUNAME'], os.environ['REPORTERPWD']),  verify=False)
         r = r.json()
-        log.debug(r)
-        log.debug("genomics_alterations_pathogenic")
-        log.debug(r["genomics_alterations_pathogenic"])
-        log.debug("genomics_alterations_unknown_significance")
-        log.debug(r["genomics_alterations_unknown_significance"])
-        pathogenic = r["genomics_alterations_pathogenic"].split("\n")
-        vus = r["genomics_alterations_unknown_significance"].split("\n")
+        
+        pathogenic =  self.reporter_variant_list_to_genes(r,"genomics_alterations_pathogenic")
+        likely =  self.reporter_variant_list_to_genes(r,"genomics_alterations_likely_pathogenic ")
+        vus =  self.reporter_variant_list_to_genes(r,"genomics_alterations_unknown_significance")
+        log.info("Hey setting number_pathogenic  to %i" %  len(pathogenic) )
         self.number_pathogenic = len(pathogenic)
-        all_variants = pathogenic + vus
+        all_variants = pathogenic + likely + vus
         genes = [x.strip().split(" ")[0] for x in all_variants]
         self.gene_list = genes
         log.debug("reached end of load_from_ngsreporter")
@@ -211,6 +221,8 @@ class PathwayMatrixByGenes():
             for row in pathways:
                 for node in row:
                     node_id = node['stId']
+                    print("node_id is %s" % node_id)
+                    print(node)
                     pathway_data[node_id] = node                    
                     pathway_genes[node_id].append(gene)
                     gene_pathways[gene].append(node_id)
@@ -232,11 +244,15 @@ class PathwayMatrixByGenes():
     def to_json(self):
         gene_nodes =[{"id":x, "type":"gene"} for x in self.matrix[0][1:-2] if x!=''] 
 
-        fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
-
+        #fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
+        if self.number_pathogenic:
+            n_known_clinically_significant = self.number_pathogenic
+        else:
+            n_known_clinically_significant = 0
+        log.info("n_known_clinically_significant should be 2 , it is %i" % n_known_clinically_significant)
         for i in range(0, len(gene_nodes)):
-            if i < fake_division_between_pathogenic_and_vus:
-
+            if i < n_known_clinically_significant:
+                log.info("!!found a pathogenic one. ")
                 classification="pathogenic"
             else:
                 classification = "unknown"
@@ -255,15 +271,17 @@ class PathwayMatrixByGenes():
 
         pathway_edges = self.pathway_interrelationships()
 
-        # for rel in pathway_edges:
-        #     edge = {"source":rel[0], "target":rel[1]}
-        #     edges.append(edge)
+        for rel in pathway_edges:
+            edge = {"source":rel[0], "target":rel[1]}
+            edges.append(edge)
 
 
         result_object = {"nodes":nodes, "links":edges}
 
         result_object = self.remove_orphan_edges(result_object)
-
+        
+        with open('lastpathwaymatrixdebug.json','w') as f:
+            f.write(json.dumps(result_object))
         return json.dumps(result_object)
 
     def remove_orphan_edges(self, result_object):
@@ -320,13 +338,34 @@ class PathwayMatrixByGenes():
             for row in self.matrix:
                 writer.writerow(row)                
 
+    def read_matrix(self,path):
+        m = []
+        with open(path,"r") as f:
+            cached_matrix_file = csv.reader(f)
+            for row in cached_matrix_file:
+                
+                m.append([int(v) if v.isdigit() else v for v in row ])
+        print('what is the read matrix?')
+        print(m)
+        return m
+
+
+
 def runquery(cyphertext):
+    #these might not work so well I think by the time clients try to acccess the data i.e. via .values()
+    #the connection is already closed and an exception is raised
     return ReactomeConnector().runquery(cyphertext)
 
 def runqueryraw(cyphertext):
+    #these might not work so well I think by the time clients try to acccess the data i.e. via .values()
+    #the connection is already closed and an exception is raised
+    
     return ReactomeConnector().runqueryraw(cyphertext)
 
 def runquery_asgraph(cyphertext):
+    #these might not work so well I think by the time clients try to acccess the data i.e. via .values()
+    #the connection is already closed and an exception is raised
+    
     return ReactomeConnector().runqueryraw_asgraph(cyphertext)
 
 #print(runquery(pathways_by_gene_list(['PIK3R1']))) 

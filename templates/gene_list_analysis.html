@@ -54,7 +54,7 @@ Note: Only showing those pathways matched to more than 1 variant in the set
 <table class="table">
 
 {% for row in matrix %}
-{% if loop.first or row[-1]>1 %} 
+{% if loop.first or row[-1]>=1 %} 
 {% if loop.first %}
 <thead>
 {% endif %}
