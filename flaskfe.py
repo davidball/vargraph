@@ -22,15 +22,14 @@ app_name = 'vargraph'
 
 app = Flask(app_name)
 Bootstrap(app)
-#app.run(host='0.0.0.0')
+# app.run(host='0.0.0.0')
 app.secret_key = os.urandom(12)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter(
-   '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.DEBUG)
-
 
 
 @app.route("/")
@@ -39,6 +38,7 @@ def home():
         return render_template('login.html')
     else:
         return samples()
+
 
 @app.route('/login', methods=['POST'])
 def do_admin_login():
@@ -52,10 +52,12 @@ def do_admin_login():
             flash('wrong password!')
     return home()
 
+
 @app.route("/logout")
 def logout():
     session['logged_in'] = False
     return home()
+
 
 @app.route("/transcripts/<string:transcript_ids>")
 def transcripts(transcript_ids):
@@ -66,15 +68,16 @@ def transcripts(transcript_ids):
 
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
 
+
 def render_accession(accession_number):
     app.logger.info("begin render_accession")
     a = mt.PathwayMatrixByGenes([])
     a.load_from_ngsreporter(accession_number)
     filename = cache_file_name(accession_number)
-    matrix_filename =  filename + '.matrix.csv'
+    matrix_filename = filename + '.matrix.csv'
     if os.path.exists(filename) and os.path.exists(matrix_filename):
         app.logger.info("found in cache, skip building matrix")
-        with open(filename,'r') as f:
+        with open(filename, 'r') as f:
             accn_json = f.read()
         matrix = a.read_matrix(matrix_filename)
         #matrix = a.build_matrix(matrix_filename+"2")
@@ -88,20 +91,22 @@ def render_accession(accession_number):
         #     app.logger.info(matrix[i])
     else:
         app.logger.info("not in cache, building matrix")
-        
+
         matrix = a.build_matrix(matrix_filename)
         accn_json = a.to_json()
-        with open(filename,'w') as f:
+        with open(filename, 'w') as f:
             f.write(accn_json)
-        
+
     return render_template('gene_list_analysis.html',
                            cypher1=mt.pathways_by_gene_list(a.gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in a.gene_list],
-                           matrix=matrix, gene_list=a.gene_list, matrixjson = accn_json)    
+                           matrix=matrix, gene_list=a.gene_list, matrixjson=accn_json)
+
 
 def cache_file_name(accn):
-    return "accession_json_cache/%s.json" % accn.replace('.','_').replace('/','_') 
+    return "accession_json_cache/%s.json" % accn.replace('.', '_').replace('/', '_')
+
 
 def render_gene_list(gene_list):
 
@@ -112,7 +117,7 @@ def render_gene_list(gene_list):
                            cypher1=mt.pathways_by_gene_list(gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in gene_list],
-                           matrix=m, gene_list=gene_list, matrixjson = a.to_json())
+                           matrix=m, gene_list=gene_list, matrixjson=a.to_json())
 
 # @app.context_processor
 # def render_table(data):
@@ -138,6 +143,7 @@ def samples():
 def get_accession(accession_number):
     return render_accession(accession_number)
 
+
 @app.route('/analysis', methods=['GET'])
 def get_analysis():
     return render_template('analysis.html')
@@ -158,9 +164,11 @@ def jsnetworkx_try():
 def simplegraph():
     return render_template('simplegraph.html')
 
+
 @app.route('/test', methods=['GET'])
 def test():
-   print("in test route about to healthcheck")
-   return "I am here. %s" % healthcheck()
+    print("in test route about to healthcheck")
+    return "I am here. %s" % healthcheck()
+
 
 app.run(host='0.0.0.0')
