@@ -6,9 +6,19 @@ import os
 import json
 import requests
 import logging
+import sys
+
+NEO4J_HOST_NAME = 'neo4j'
 
 app_name = 'vargraph'
 log = logging.getLogger(app_name)  # + "." + __name__)
+
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+log.addHandler(handler)
+log.setLevel(logging.DEBUG)
 
 
 def subgraph_by_transcript_ids(transcript_ids, with_statement=False):
@@ -76,7 +86,7 @@ def subgraph_by_transcript_ids_using_with(transcript_ids, depth=3):
 
     cypher_list = "(('%s' in n.otherIdentifier))" % "' in n.otherIdentifier) or ('".join(
         transcript_ids)
-    #cypher = "match (n)-[r]-(anyneighbor)-[r2]-(n2)-[r3]-(n3) where not (anyneighbor:ReferenceDatabase) and not (n2:ReferenceDatabase) and not (anyneighbor:InstanceEdit) and not (n:InstanceEdit) and not (n2:InstanceEdit) and not (n3:InstanceEdit) and not (n3:ReferenceDatabase) and not (n)-[r:species]-(anyneighbor) and not (n3:Species) and not (anyneighbor)-[r2:species]-(n2) and %s return n, anyneighbor,n2,n3" % cypher_list
+    # cypher = "match (n)-[r]-(anyneighbor)-[r2]-(n2)-[r3]-(n3) where not (anyneighbor:ReferenceDatabase) and not (n2:ReferenceDatabase) and not (anyneighbor:InstanceEdit) and not (n:InstanceEdit) and not (n2:InstanceEdit) and not (n3:InstanceEdit) and not (n3:ReferenceDatabase) and not (n)-[r:species]-(anyneighbor) and not (n3:Species) and not (anyneighbor)-[r2:species]-(n2) and %s return n, anyneighbor,n2,n3" % cypher_list
 
     cypher_variant_filter = "MATCH (n) where %s \nwith n" % cypher_list
 
@@ -182,7 +192,11 @@ def pathway_interrelatinships_query_from_initial_match_clause(genes):
 
 
 class PathwayMatrixByGenes():
-    def __init__(self, gene_list):
+    def __init__(self, gene_list=[]):
+        self._matrix_loaded = False
+        self._json_loaded = False
+        self.accession_number = ''
+        self.number_pathogenic = 0
         self.gene_list = gene_list
 
     def test():
@@ -205,12 +219,79 @@ class PathwayMatrixByGenes():
         else:
             return []
 
-    def load_from_ngsreporter(self, accession_number):
+    def cache_json_file_name(self, accn=''):
+        if accn == '':
+            accn = self.accession_number
+        if len(accn) == 0:
+            raise Exception(
+                "Can not generate cache_json_file_name due to no accession_number provided")
+        return "accession_json_cache/%s.json" % accn.replace('.', '_').replace('/', '_')
 
+    def cache_matrix_file_name(self, accn=''):
+        if accn == '':
+            accn = self.accession_number
+        return (self.cache_json_file_name(accn) + ".matrix.csv")
+
+    def load_from_cache(self, accession_number):
+       # try:
+        json_filename = self.cache_json_file_name(accession_number)
+        matrix_filename = self.cache_matrix_file_name(accession_number)
+
+        log.info("expected cache file names:\n\t%s\n\t%s" %
+                 (json_filename, matrix_filename))
+        if os.path.exists(json_filename) and os.path.exists(matrix_filename):
+            log.info("found in cache, skip building matrix")
+            with open(json_filename, 'r') as f:
+                accn_json = "\n".join(f.readlines())
+                parsed = json.loads(accn_json)
+                if "number_pathogenic" in parsed:
+                    self.number_pathogenic = parsed['number_pathogenic']
+                else:
+                    self.number_pathogenic = 0
+                self._json = accn_json
+                self._json_loaded = True
+            self.matrix = self.read_matrix(matrix_filename)
+            self._matrix_loaded = True
+            log.info("Successfully loaded from cache")
+            return True
+        else:
+            log.info("%s is not in cache" % accession_number)
+            return False
+        # except:
+        #     log.error('Error loading %s from cache' % accession_number)
+        #     return False
+
+    def reset_state(self):
+        self._json_loaded = False
+        self._json = False
+        self._matrix_loaded = False
+        self.matrix = None
+
+    def load_from_ngsreporter(self, accession_number, allow_cache_read=True):
         log.debug("begin load_from_ngsreporter %s" % accession_number)
-        r = requests.get("https://ngsreporter.mgl.providence.org/api_get_report_json/%s" %
-                         accession_number, auth=(os.environ['REPORTERUNAME'], os.environ['REPORTERPWD']),  verify=False)
-        r = r.json()
+
+        self.reset_state
+
+        self.accession_number = accession_number
+
+        if allow_cache_read:
+            log.info("Checking cache")
+            if self.load_from_cache(accession_number):
+                log.info("Found in cache, nothing to do.")
+                return
+        else:
+            log.info("Checking cache not allowed")
+
+        url = "https://ngsreporter.mgl.providence.org/api_get_report_json/%s" % accession_number
+
+        r = requests.get(url, auth=(
+            os.environ['REPORTERUNAME'], os.environ['REPORTERPWD']),  verify=False)
+        try:
+            r = r.json()
+        except:
+            log.error("Couldn't parse json response from")
+            log.error(url)
+            # log.error(r.content)
 
         pathogenic = self.reporter_variant_list_to_genes(
             r, "genomics_alterations_pathogenic")
@@ -225,8 +306,12 @@ class PathwayMatrixByGenes():
         self.gene_list = genes
         log.debug("reached end of load_from_ngsreporter")
 
-    def build_matrix(self, path=""):
-        log.debug("begin build_matrix dubeg")
+    def build_matrix(self, path="", force=False):
+        log.debug("begin build_matrix debug")
+
+        if not force and self._matrix_loaded:
+            return self.matrix
+
         results = {}
         pathway_data = defaultdict(list)
         pathway_genes = defaultdict(list)
@@ -257,22 +342,30 @@ class PathwayMatrixByGenes():
         if len(path) > 0:
             self.save_matrix(path)
 
+        if len(self.accession_number) > 0:
+            self.save_matrix(self.cache_matrix_file_name())
+
         return self.matrix
 
     def build_matrix_of_pathway_relationships(self):
         print("coming")
 
     def to_json(self):
+        if not self._matrix_loaded:
+            self.build_matrix()
+
+        if self._json_loaded:
+            return self._json
+
         gene_nodes = [{"id": x, "type": "gene"}
                       for x in self.matrix[0][1:-2] if x != '']
 
-        #fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
+        # fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
         if self.number_pathogenic:
             n_known_clinically_significant = self.number_pathogenic
         else:
             n_known_clinically_significant = 0
-        log.info("n_known_clinically_significant should be 2 , it is %i" %
-                 n_known_clinically_significant)
+
         for i in range(0, len(gene_nodes)):
             if i < n_known_clinically_significant:
                 log.info("!!found a pathogenic one. ")
@@ -303,9 +396,19 @@ class PathwayMatrixByGenes():
 
         result_object = self.remove_orphan_edges(result_object)
 
+        result_object["number_pathogenic"] = n_known_clinically_significant
+
+        result_object["common_pathways"] = self.check_for_common_pathways_in_vus()
         with open('lastpathwaymatrixdebug.json', 'w') as f:
             f.write(json.dumps(result_object))
-        return json.dumps(result_object)
+
+        self._json = json.dumps(result_object)
+        self._json_loaded = True
+
+        with open(self.cache_json_file_name(), 'w') as f:
+            f.write(self._json)
+
+        return self._json
 
     def remove_orphan_edges(self, result_object):
         nodes = result_object["nodes"]
@@ -320,8 +423,8 @@ class PathwayMatrixByGenes():
         ids = ",".join([str(n.id) for k, n in self.pathway_data.items()])
         cy = "MATCH path=()-[:hasEvent]->(n) where id(n) in [%s] return path;" % ids
         g = runquery_asgraph(cy)
-        #v =r.values()
-        #g = r.graph()
+        # v =r.values()
+        # g = r.graph()
         # generate tuples of from node node, to node name,
         endpoints = [[n.start_node['displayName'],
                       n.end_node['displayName']] for n in g.relationships]
@@ -338,6 +441,28 @@ class PathwayMatrixByGenes():
                           ['displayName']] + values + [sum(values)]
             matrix.append(matrix_row)
         return matrix
+
+    def check_for_common_pathways_in_vus(self):
+        m = self.matrix
+        common_pathways = []
+        for rowidx in range(1, len(m)):
+            # for each pathway (column), assumes all rows have same # of columns
+            significant_count = 0
+            vus_count = 0
+            for colidx in range(1, len(m[0])):
+                if colidx <= self.number_pathogenic:
+                    significant_count += 1
+                else:
+                    vus_count += 1
+            # or among vus
+            if (significant_count+vus_count > 1) and vus_count > 0:
+                common_pathways.append(m[rowidx][0])
+        exclude_overgeneral_pathways = ['Disease']
+
+        common_pathways = [
+            p for p in common_pathways if not p in exclude_overgeneral_pathways]
+
+        return common_pathways
 
     def matrix_genes_by_pathways(self):
         pathway_keys = self.pathway_data.keys()
@@ -357,6 +482,7 @@ class PathwayMatrixByGenes():
             print("Gene %s: %i pathways" % (k, len(v)))
 
     def save_matrix(self, path):
+        log.debug("save matrix to path %s" % path)
         with open(path, "w") as f:
             writer = csv.writer(f)
             for row in self.matrix:
@@ -394,8 +520,8 @@ def runquery_asgraph(cyphertext):
     return ReactomeConnector().runqueryraw_asgraph(cyphertext)
 
 # print(runquery(pathways_by_gene_list(['PIK3R1'])))
-#x = runquery(pathways_by_gene_list(['PIK3R1']))
-#n_ids = [r[6].id for r in x]
+# x = runquery(pathways_by_gene_list(['PIK3R1']))
+# n_ids = [r[6].id for r in x]
 
 
 spacer = "------------------------------"
@@ -478,12 +604,19 @@ def dostuff():
 
 
 class ReactomeConnector():
-    def __init__(self, uri="bolt://neo4j:7687", user='neo4j', password=os.environ['REACTOME_PWD']):
+
+    def __init__(self, uri="", user='neo4j', password=os.environ['REACTOME_PWD']):
+
+        if len(uri) == 0:
+            uri = ReactomeConnector.default_neo4j_host()
         log.info("about to try to connect to %s with u=%s and pwd=%s" %
                  (uri, user, password))
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
         log.info("Reached end of ReactomeConnector.__init__")
+
+    def default_neo4j_host():
+        return "bolt://%s:7687" % NEO4J_HOST_NAME
 
     def runquery(self, cyphertext):
         log.debug("begin plain 'runquery' method")
@@ -502,7 +635,7 @@ class ReactomeConnector():
     def runqueryraw_asgraph(self, cyphertext):
         return self.runqueryraw(cyphertext).graph()
 
-#REACTOME = ReactomeConnector()
+# REACTOME = ReactomeConnector()
 
 
 if __name__ == "__main__":
