@@ -2,3 +2,6 @@ body {
 
 }
 
+svg g text {
+    font-size:5px;
+}

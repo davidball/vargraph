@@ -392,6 +392,12 @@ class PathwayMatrixByGenes():
             edge = {"source": rel[0], "target": rel[1]}
             edges.append(edge)
 
+        exclude_overgeneral_pathways = ['Disease']
+
+        for pn in exclude_overgeneral_pathways:
+            if pn in nodes:
+                nodes.remove(pn)
+
         result_object = {"nodes": nodes, "links": edges}
 
         result_object = self.remove_orphan_edges(result_object)
@@ -450,17 +456,18 @@ class PathwayMatrixByGenes():
             significant_count = 0
             vus_count = 0
             for colidx in range(1, len(m[0])):
-                if colidx <= self.number_pathogenic:
-                    significant_count += 1
-                else:
-                    vus_count += 1
+                if m[rowidx][colidx] == 1:
+                    if colidx <= self.number_pathogenic:
+                        significant_count += 1
+                    else:
+                        vus_count += 1
             # or among vus
             if (significant_count+vus_count > 1) and vus_count > 0:
                 common_pathways.append(m[rowidx][0])
         exclude_overgeneral_pathways = ['Disease']
 
         common_pathways = [
-            p for p in common_pathways if not p in exclude_overgeneral_pathways]
+            p for p in common_pathways if not (p.strip() in exclude_overgeneral_pathways)]
 
         return common_pathways
 

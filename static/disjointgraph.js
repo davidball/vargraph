@@ -41,8 +41,8 @@ export function disjointGraph(data) {
   const nodes = data.nodes.map(d => Object.create(d));
 
   const simulation = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id(d => d.id).distance(100))
-    .force("charge", d3.forceManyBody().strength(-200))
+    .force("link", d3.forceLink(links).id(d => d.id).distance(75))
+    .force("charge", d3.forceManyBody().strength(-150))
     .force("x", d3.forceX())
     .force("y", d3.forceY());
 
