@@ -2,7 +2,8 @@
 {% block content %}
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js" integrity="sha256-k9RyZhvMj2bg0fd8L3IE41t0HpTXnivMoePN/Ksq250=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"
+    integrity="sha256-k9RyZhvMj2bg0fd8L3IE41t0HpTXnivMoePN/Ksq250=" crossorigin="anonymous"></script>
 <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
 <script src="https://d3js.org/d3-quadtree.v1.min.js"></script>
 <script src="https://d3js.org/d3-timer.v1.min.js"></script>
@@ -32,53 +33,112 @@
 
 
 
-<style>.table {
-    max-width:600px;
-}
+<style>
+    .table {
+        max-width: 600px;
+    }
+
+    #legend {
+        width: 500px;
+        border: solid black 1px;
+        font-size: 10px
+    }
+
+    #legend ul li div {
+        display: inline;
+        width: 20px;
+        height: 20px;
+        border: solid black 1px;
+    }
+
+    #legend .clinically_significant {
+        background-color: red
+    }
+
+    #legend .vus {
+        background-color: grey
+    }
+
+    #legend .pathway {
+        background-color: blue
+    }
 </style>
 <h1>Gene List Analysis</h1>
 <ul>
     {% for g in gene_list %}
-        <li>{{g}}</li>
+    <li>{{g}}</li>
     {% endfor %}
 </ul>
 <div id="external_links">
-Other Links
-<a target="_new" href="https://apps.pathwaycommons.org/interactions?source={% for g in gene_list %}{{g}}%2C{% endfor %}">PathwayCommons.org Interactions</a>
-<a target="_new" href="http://170.220.59.155:7474/browser/">Raw Neo4j Reactome Queries</a>
+    Other Links
+    <a target="_new"
+        href="https://apps.pathwaycommons.org/interactions?source={% for g in gene_list %}{{g}}%2C{% endfor %}">PathwayCommons.org
+        Interactions</a>
+    <a target="_new" href="http://170.220.59.155:7474/browser/">Raw Neo4j Reactome Queries</a>
 </div>
-<div id="graph_container"><svg></svg>  </div>
+
+
+<div id="graph_container"><svg></svg> </div>
+
+<div id="legend">
+    <h3>Node Colors</h3>
+    <ul>
+        <li>
+            <div class="clinically_significant">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>Clinically
+            Significant/Pathogenic
+        </li>
+        <li>
+            <div class="vus">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>VUS
+        </li>
+        <li>
+            <div class="pathway">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>Pathway
+        </li>
+        </li>
+    </ul>
+    <h3>
+        Edges
+    </h3>
+    <p>An edge between a variant (vus or Clinically Significant) means that the gene product has been linked to taht
+        pathway (but not necessarily the SPECIFIC variant).
+
+    </p>
+    <p>An edge between two pathway nodes denotes there is some hierarchical relationship of the pathways in Reactome.
+    </p>
+</div>
+
 <h1>Matrix</h1>
 Note: Only showing those pathways matched to more than 1 variant in the set
 
 <table class="table">
 
-{% for row in matrix %}
-{% if loop.first or row[-1]>=1 %} 
-{% if loop.first %}
-<thead>
-{% endif %}
-<tr>
-{% for col in row %}
+    {% for row in matrix %}
+    {% if loop.first or row[-1]>=1 %}
+    {% if loop.first %}
+    <thead>
+        {% endif %}
+        <tr>
+            {% for col in row %}
 
-<{% if loop.first%}th{%else%}td{%endif%} style="max-width:170px" {% if loop.last %}class="last_col"{%endif%}>
-{{col}}
-</{% if loop.first%}th{%else%}td{%endif%}>
-{% endfor %}
-</tr>
-{% if loop.first %}
-</thead>
-<tbody>
-{% endif %}
-{% endif %}
-{% endfor %}
-</tbody>
+            <{% if loop.first%}th{%else%}td{%endif%} style="max-width:170px" {% if loop.last %}class="last_col"
+                {%endif%}>
+                {{col}}
+            </{% if loop.first%}th{%else%}td{%endif%}>
+            {% endfor %}
+        </tr>
+        {% if loop.first %}
+    </thead>
+    <tbody>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
 </table>
 
-<code>
-   {{ matrixjson }}
-</code>
+
 <h1>Cypher examples</h1>
+
+You can try these yourself on a hosted neo4j database with Reactome preloaded <a
+    href="http://170.220.59.155:7474/browser/">here</a>.
 <h2>Cypher 1</h2>
 <code>
     {{ cypher1}}
@@ -90,28 +150,27 @@ Note: Only showing those pathways matched to more than 1 variant in the set
     {{ c }}
 </code>
 {% endfor %}
-<div id="viewer">
-    <svg id="svg_viewer"></svg>
-</div>
+
+
+<h1>Json Version of the Graph</h1>
+<code>
+   {{ matrixjson }}
+</code>
 
 
 <script type="module">
-let reporter_data = {{ matrixjson|safe }};
-window.data = reporter_data;
-import {disjointGraph} from '/static/disjointgraph.js';
-/*d3.json('/static/sample_json.json', function(data) {
+    let reporter_data = {{ matrixjson| safe }};
+    window.data = reporter_data;
+    import { disjointGraph } from '/static/disjointgraph.js';
+    /*d3.json('/static/sample_json.json', function(data) {
+        
+        disjointGraph(data);
     
-    disjointGraph(data);
-
-})*/
-disjointGraph(reporter_data);
+    })*/
+    disjointGraph(reporter_data);
 // const abc = await import(moduleSpecifier);
 </script>
 
 
 
 {% endblock %}
-
-
-
-
