@@ -7,7 +7,7 @@
 from flask import Flask
 from flask import request
 from flask import render_template
-from flask import session
+from flask import session, redirect, url_for
 from flask import flash
 import os
 import logging
@@ -31,6 +31,12 @@ handler.setFormatter(logging.Formatter(
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.DEBUG)
 
+@app.before_request
+def before_request():
+    app.logger.info(request.endpoint)
+    allowed_endpoints = ['login','do_admin_login']
+    if 'logged_in' not in session and request.endpoint not in allowed_endpoints:
+        return redirect(url_for('login'))
 
 @app.route("/")
 def home():
@@ -39,9 +45,13 @@ def home():
     else:
         return samples()
 
+@app.route('/login', methods=['GET'])
+def login():
+    return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
 def do_admin_login():
+
     pwd = os.environ.get('VARGRAPHPWD')
     if pwd == None:
         flash("Authentication not configured. Login is impossible.")
