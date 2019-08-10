@@ -7,6 +7,7 @@ import json
 import requests
 import logging
 import sys
+import time
 
 NEO4J_HOST_NAME = 'neo4j'
 
@@ -236,7 +237,7 @@ class PathwayMatrixByGenes():
        # try:
         json_filename = self.cache_json_file_name(accession_number)
         matrix_filename = self.cache_matrix_file_name(accession_number)
-
+        self.pathway_data = None
         log.info("expected cache file names:\n\t%s\n\t%s" %
                  (json_filename, matrix_filename))
         if os.path.exists(json_filename) and os.path.exists(matrix_filename):
@@ -248,10 +249,12 @@ class PathwayMatrixByGenes():
                     self.number_pathogenic = parsed['number_pathogenic']
                 else:
                     self.number_pathogenic = 0
+                if "pathway_data" in parsed:
+                    self.pathway_data = parsed['pathway_data']
                 self._json = accn_json
                 self._json_loaded = True
-            self.matrix = self.read_matrix(matrix_filename)
-            self._matrix_loaded = True
+            self.read_matrix(matrix_filename)
+
             log.info("Successfully loaded from cache")
             return True
         else:
@@ -312,6 +315,7 @@ class PathwayMatrixByGenes():
         if not force and self._matrix_loaded:
             return self.matrix
 
+        start_time = time.time()
         results = {}
         pathway_data = defaultdict(list)
         pathway_genes = defaultdict(list)
@@ -345,10 +349,15 @@ class PathwayMatrixByGenes():
         if len(self.accession_number) > 0:
             self.save_matrix(self.cache_matrix_file_name())
 
+        self.time_to_build = time.time() - start_time
         return self.matrix
 
     def build_matrix_of_pathway_relationships(self):
         print("coming")
+
+    def genes_from_matrix(self):
+        # the top row of the matrix excluding the first and last columns is the gene list
+        return [x for x in self.matrix[0][1:-2] if x != '']
 
     def to_json(self):
         if not self._matrix_loaded:
@@ -396,7 +405,10 @@ class PathwayMatrixByGenes():
 
         for pn in exclude_overgeneral_pathways:
             if pn in nodes:
+                log.info("ACTUALLY REMOVING %s" % pn)
                 nodes.remove(pn)
+            else:
+                log.info("not removing %s" % pn)
 
         result_object = {"nodes": nodes, "links": edges}
 
@@ -405,6 +417,12 @@ class PathwayMatrixByGenes():
         result_object["number_pathogenic"] = n_known_clinically_significant
 
         result_object["common_pathways"] = self.check_for_common_pathways_in_vus()
+
+        if hasattr(self, "pathway_data"):
+            result_object["pathway_data"] = self.pathway_data_to_hash()
+
+        if hasattr(self, 'time_to_build'):
+            result_object["time_to_build"] = self.time_to_build
         with open('lastpathwaymatrixdebug.json', 'w') as f:
             f.write(json.dumps(result_object))
 
@@ -415,6 +433,20 @@ class PathwayMatrixByGenes():
             f.write(self._json)
 
         return self._json
+
+    def pathway_data_to_hash(self):
+        if hasattr(self, "pathway_data"):
+            result = {}
+            nodes = [v for k, v in self.pathway_data.items()]
+            for n in nodes:
+                key = n['stId']
+                node_val = {k: v for k, v in n.items()}
+                node_val['id'] = n.id
+                node_val['labels'] = [l for l in n.labels]
+                result[key] = node_val
+            return result
+        else:
+            return {}
 
     def remove_orphan_edges(self, result_object):
         nodes = result_object["nodes"]
@@ -502,9 +534,17 @@ class PathwayMatrixByGenes():
             for row in cached_matrix_file:
 
                 m.append([int(v) if v.isdigit() else v for v in row])
-        print('what is the read matrix?')
-        print(m)
+        self.matrix = m
+        self._matrix_loaded = True
+        self.gene_list = self.genes_from_matrix()
+        log.info("gene list after loading matrix")
+        log.info(",".join(self.gene_list))
         return m
+
+    def test():
+        p = PathwayMatrixByGenes(['BRAF', 'KRAS'])
+        p.build_matrix()
+        return p
 
 
 def runquery(cyphertext):
