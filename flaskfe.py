@@ -33,7 +33,7 @@ app.logger.setLevel(logging.DEBUG)
 
 @app.before_request
 def before_request():
-    app.logger.info(request.endpoint)
+    app.logger.info("before_request handler for endpoint %s" % request.endpoint)
     allowed_endpoints = ['login','do_admin_login']
     if 'logged_in' not in session and request.endpoint not in allowed_endpoints:
         return redirect(url_for('login'))
