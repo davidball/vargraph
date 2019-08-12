@@ -1,7 +1,58 @@
 body {
-
+    padding:20px;
 }
 
 svg g text {
     font-size:5px;
+}
+
+
+#graph_container {
+    width:1000px;
+    height:800px;
+    border: 1px solid grey;
+}
+
+svg {
+    width:1000px;
+    height:800px;
+}
+
+.table {
+    max-width: 600px;
+}
+
+#legend {
+    width: 500px;
+    border: solid black 1px;
+    font-size: 10px;
+    float:right;
+    marging-right:20px;
+}
+
+#legend ul li div {
+    display: inline;
+    width: 20px;
+    height: 20px;
+    border: solid black 1px;
+}
+
+#legend .clinically_significant {
+    background-color: red
+}
+
+#legend .vus {
+    background-color: grey
+}
+
+#legend .pathway {
+    background-color: blue
+}
+
+#legend .common_pathway {
+    background-color: yellow
+}
+
+#gene_list {
+    min-height:252px;
 }

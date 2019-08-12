@@ -352,6 +352,16 @@ class PathwayMatrixByGenes():
         self.time_to_build = time.time() - start_time
         return self.matrix
 
+    def pathway_node_id_by_display_name(self, displayName):
+        if not hasattr(self, "pathway_data"):
+            return "nopathwaydata"
+        if not self.pathway_data:
+            return "pathwaydataisnone"
+        for rid, node in self.pathway_data.items():
+            if node['displayName'] == displayName:
+                return rid
+        return None
+
     def build_matrix_of_pathway_relationships(self):
         print("coming")
 
@@ -480,6 +490,8 @@ class PathwayMatrixByGenes():
             matrix.append(matrix_row)
         return matrix
 
+    # find pathways (excluding overly general ones like 'disease'
+    # that are common between more than one gene where at least one of the is a vus
     def check_for_common_pathways_in_vus(self):
         m = self.matrix
         common_pathways = []
@@ -487,14 +499,18 @@ class PathwayMatrixByGenes():
             # for each pathway (column), assumes all rows have same # of columns
             significant_count = 0
             vus_count = 0
-            for colidx in range(1, len(m[0])):
+            for colidx in range(1, len(m[0])-1):
                 if m[rowidx][colidx] == 1:
+                    log.info("found a 1 at row, col = (%i,%i)" %
+                             (rowidx, colidx))
                     if colidx <= self.number_pathogenic:
                         significant_count += 1
                     else:
                         vus_count += 1
             # or among vus
             if (significant_count+vus_count > 1) and vus_count > 0:
+                log.info("adding %s\n\tigcount=%i and vus_count=%i" %
+                         (m[rowidx][0], significant_count, vus_count))
                 common_pathways.append(m[rowidx][0])
         exclude_overgeneral_pathways = ['Disease']
 

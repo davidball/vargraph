@@ -33,53 +33,6 @@
 
 
 
-<style>
-    .table {
-        max-width: 600px;
-    }
-
-    #legend {
-        width: 500px;
-        border: solid black 1px;
-        font-size: 10px
-    }
-
-    #legend ul li div {
-        display: inline;
-        width: 20px;
-        height: 20px;
-        border: solid black 1px;
-    }
-
-    #legend .clinically_significant {
-        background-color: red
-    }
-
-    #legend .vus {
-        background-color: grey
-    }
-
-    #legend .pathway {
-        background-color: blue
-    }
-</style>
-<h1>Gene List Analysis</h1>
-<ul>
-    {% for g in gene_list %}
-    <li>{{g}}</li>
-    {% endfor %}
-</ul>
-<div id="external_links">
-    Other Links
-    <a target="_new"
-        href="https://apps.pathwaycommons.org/interactions?source={% for g in gene_list %}{{g}}%2C{% endfor %}">PathwayCommons.org
-        Interactions</a>
-    <a target="_new" href="http://170.220.59.155:7474/browser/">Raw Neo4j Reactome Queries</a>
-</div>
-
-
-<div id="graph_container"><svg></svg> </div>
-
 <div id="legend">
     <h3>Node Colors</h3>
     <ul>
@@ -92,6 +45,9 @@
         </li>
         <li>
             <div class="pathway">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>Pathway
+        </li>
+        <li>
+            <div class="common_pathway">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>Common Pathway
         </li>
         </li>
     </ul>
@@ -106,22 +62,48 @@
     </p>
 </div>
 
+<div id="gene_list">
+    <h1>Gene List Analysis</h1>
+    <ul>
+        {% for g in gene_list %}
+        <li>{{g}}</li>
+        {% endfor %}
+    </ul>
+    <div id="external_links">
+        Other Links
+        <a target="_new"
+            href="https://apps.pathwaycommons.org/interactions?source={% for g in gene_list %}{{g}}%2C{% endfor %}">PathwayCommons.org
+            Interactions</a>
+        <a target="_new" href="http://170.220.59.155:7474/browser/">Raw Neo4j Reactome Queries</a>
+    </div>
+</div>
+
+
+
+<div id="graph_container"><svg></svg> </div>
+
 <h1>Matrix</h1>
 Note: Only showing those pathways matched to more than 1 variant in the set
 
 <table class="table">
 
     {% for row in matrix %}
-    {% if loop.first or row[-1]>=1 %}
+    {% if loop.first or row[-1]>1 %}
     {% if loop.first %}
     <thead>
         {% endif %}
         <tr>
             {% for col in row %}
-
             <{% if loop.first%}th{%else%}td{%endif%} style="max-width:170px" {% if loop.last %}class="last_col"
                 {%endif%}>
+                {% if loop.first%}
+                <a target="_new"
+                    href="http://reactome.org/PathwayBrowser/#/{{pathway_matrix.pathway_node_id_by_display_name(col)}}">
+                    {{col}}
+                </a>
+                {%else%}
                 {{col}}
+                {%endif%}
             </{% if loop.first%}th{%else%}td{%endif%}>
             {% endfor %}
         </tr>

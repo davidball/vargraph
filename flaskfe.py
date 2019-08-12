@@ -86,35 +86,21 @@ def transcripts(transcript_ids):
 def render_accession(accession_number):
     app.logger.info("begin render_accession")
     a = mt.PathwayMatrixByGenes()
-    a.load_from_ngsreporter(accession_number)
-    # filename = cache_file_name(accession_number)
-    # matrix_filename = filename + '.matrix.csv'
-    # if os.path.exists(filename) and os.path.exists(matrix_filename):
-    #     app.logger.info("found in cache, skip building matrix")
-    #     with open(filename, 'r') as f:
-    #         accn_json = f.read()
-    #     matrix = a.read_matrix(matrix_filename)
-    #     #matrix = a.build_matrix(matrix_filename+"2")
-    #     app.logger.info("where is next line?")
-    #     #app.logger.info("whats diff %i %i" % (len(matrixc),len(matrix)))
-    #     #app.logger.info("where was last line?")
-    #     # for i in range(len(matrix)):
-    #     #     app.logger.info("c one:")
-    #     #     app.logger.info(matrixc[i])
-    #     #     app.logger.info("fresh one")
-    #     #     app.logger.info(matrix[i])
-    # else:
-    #     app.logger.info("not in cache, building matrix")
+
+    allow_cache = not (request.args.get('nocache') == '1')
+    app.logger.info("what was value of nocache %s" %
+                    request.args.get('nocache'))
+    allow_cache = True
+    a.load_from_ngsreporter(accession_number, allow_cache)
 
     matrix = a.build_matrix()
     accn_json = a.to_json()
-    # with open(filename, 'w') as f:
-    #    f.write(accn_json)
 
     return render_template('gene_list_analysis.html',
                            cypher1=mt.pathways_by_gene_list(a.gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in a.gene_list],
+                           pathway_matrix=a,
                            matrix=matrix, gene_list=a.gene_list, matrixjson=accn_json)
 
 
@@ -131,6 +117,7 @@ def render_gene_list(gene_list):
                            cypher1=mt.pathways_by_gene_list(gene_list),
                            cypher2=[mt.pathways_by_gene_list(
                                [x]) for x in gene_list],
+                           pathway_matrix=a,
                            matrix=m, gene_list=gene_list, matrixjson=a.to_json())
 
 # @app.context_processor
@@ -148,8 +135,8 @@ def genes(gene_names):
 def samples():
     return ("<ul><li><a href='/transcripts/NM_000038,NM_032043,NM_001114122,NM_001904,"
             "NM_022552,NM_002006,NM_024675,NM_181523,NM_003579,"
-            "NM_000321,NM_001127208,NM_000546'>19-086-14883</a></li>"
-            "<li><a href='/genes/PIK3R1'>PIK3RI</a></li>"
+            "NM_000321,NM_001127208,NM_000546'>By transcript 19-086-14883</a></li>"
+            "<li><a href='/genes/PIK3R1'>PIK3RI</a></li><li><a href='/accession/19-212-07584'>19-212-07584</a></li>"
             "</ul>")
 
 
