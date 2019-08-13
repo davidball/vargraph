@@ -29,12 +29,15 @@ svg {
     float:right;
     marging-right:20px;
 }
-
+#legend ul li {
+    padding:4px;
+}
 #legend ul li div {
     display: inline;
     width: 20px;
     height: 20px;
     border: solid black 1px;
+    margin:2px;
 }
 
 #legend .clinically_significant {
