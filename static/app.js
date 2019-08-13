@@ -263,7 +263,7 @@ var setupMarkers = function (svg) {
         .attr("orient", "auto")
         .append("path")
         .attr("d", "M 0 0 12 6 0 12 3 6")
-        .style("fill", "yellow");
+        .style("fill", "orange");
 
 
     svg.append("svg:defs").append("svg:marker")

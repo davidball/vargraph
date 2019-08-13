@@ -81,7 +81,7 @@ export function disjointGraph(data) {
 
         if (data['common_pathways']) {
           if (data['common_pathways'].includes(d.id)) {
-            return 'yellow'
+            return 'orange'
           }
         }
         return 'blue'
