@@ -34,8 +34,9 @@ app.logger.setLevel(logging.DEBUG)
 
 @app.before_request
 def before_request():
-    app.logger.info("before_request handler for endpoint %s" % request.endpoint)
-    allowed_endpoints = ['login','do_admin_login']
+    app.logger.info("before_request handler for endpoint %s" %
+                    request.endpoint)
+    allowed_endpoints = ['login', 'do_admin_login']
     if 'logged_in' not in session and request.endpoint not in allowed_endpoints:
         return redirect(url_for('login'))
 
@@ -88,9 +89,7 @@ def render_accession(accession_number):
     a = mt.PathwayMatrixByGenes()
 
     allow_cache = not (request.args.get('nocache') == '1')
-    app.logger.info("what was value of nocache %s" %
-                    request.args.get('nocache'))
-    allow_cache = True
+
     a.load_from_ngsreporter(accession_number, allow_cache)
 
     matrix = a.build_matrix()

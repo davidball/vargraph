@@ -302,7 +302,7 @@ class PathwayMatrixByGenes():
             r, "genomics_alterations_likely_pathogenic ")
         vus = self.reporter_variant_list_to_genes(
             r, "genomics_alterations_unknown_significance")
-        log.info("Hey setting number_pathogenic  to %i" % len(pathogenic))
+
         self.number_pathogenic = len(pathogenic)
         all_variants = pathogenic + likely + vus
         genes = [x.strip().split(" ")[0] for x in all_variants]
@@ -386,7 +386,6 @@ class PathwayMatrixByGenes():
 
         for i in range(0, len(gene_nodes)):
             if i < n_known_clinically_significant:
-                log.info("!!found a pathogenic one. ")
                 classification = "pathogenic"
             else:
                 classification = "unknown"
@@ -503,16 +502,13 @@ class PathwayMatrixByGenes():
             vus_count = 0
             for colidx in range(1, len(m[0])-1):
                 if m[rowidx][colidx] == 1:
-                    log.info("found a 1 at row, col = (%i,%i)" %
-                             (rowidx, colidx))
+
                     if colidx <= self.number_pathogenic:
                         significant_count += 1
                     else:
                         vus_count += 1
             # or among vus
             if (significant_count+vus_count > 1) and vus_count > 0:
-                log.info("adding %s\n\tigcount=%i and vus_count=%i" %
-                         (m[rowidx][0], significant_count, vus_count))
                 common_pathways.append(m[rowidx][0])
         exclude_overgeneral_pathways = ['Disease']
 
@@ -555,8 +551,6 @@ class PathwayMatrixByGenes():
         self.matrix = m
         self._matrix_loaded = True
         self.gene_list = self.genes_from_matrix()
-        log.info("gene list after loading matrix")
-        log.info(",".join(self.gene_list))
         return m
 
     def test():
@@ -674,8 +668,7 @@ class ReactomeConnector():
 
         if len(uri) == 0:
             uri = ReactomeConnector.default_neo4j_host()
-        log.info("about to try to connect to %s with u=%s and pwd=%s" %
-                 (uri, user, password))
+
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._session = self._driver.session()
         log.info("Reached end of ReactomeConnector.__init__")
