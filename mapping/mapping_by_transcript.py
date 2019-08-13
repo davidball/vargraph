@@ -375,8 +375,7 @@ class PathwayMatrixByGenes():
         if self._json_loaded:
             return self._json
 
-        gene_nodes = [{"id": x, "type": "gene"}
-                      for x in self.matrix[0][1:-2] if x != '']
+        gene_nodes = self.gene_json_nodes_from_matrix()
 
         # fake_division_between_pathogenic_and_vus = int(len(gene_nodes)/2)
         if self.number_pathogenic:
@@ -433,6 +432,11 @@ class PathwayMatrixByGenes():
             f.write(self._json)
 
         return self._json
+
+    def gene_json_nodes_from_matrix(self):
+        # the gene names are across the first row but not in the first or last column
+        # (the first column is empty, the last is a count)
+        return [{"id": x, "type": "gene"} for x in self.matrix[0][1:-1] if x != '']
 
     def pathway_json_nodes_from_matrix(self, exclude_overly_general=True):
         if exclude_overly_general:
