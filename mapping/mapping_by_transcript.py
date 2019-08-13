@@ -321,11 +321,10 @@ class PathwayMatrixByGenes():
         pathway_genes = defaultdict(list)
         gene_pathways = {gene: [] for gene in self.gene_list}
 
-        log.debug("Count of self.gene_list=%i" % len(self.gene_list))
         for gene in self.gene_list:
-            log.info("about to run pathways_by_gene_list for %s" % gene)
+
             pathways = runquery(pathways_by_gene_list([gene]))
-            log.info("ran it, len pathways is %i" % len(pathways))
+
             results[gene] = pathways
 
             for row in pathways:
@@ -393,9 +392,10 @@ class PathwayMatrixByGenes():
                 classification = "unknown"
             gene_nodes[i]["classification"] = classification
 
-        pathway_nodes = [{"id": x[0], "type":"pathway"}
-                         for x in self.matrix[:] if x != '']
+        pathway_nodes = self.pathway_json_nodes_from_matrix(True)
+
         nodes = gene_nodes + pathway_nodes
+
         edges = []
         for ridx in range(1, len(self.matrix)):
             row = self.matrix[ridx]
@@ -410,15 +410,6 @@ class PathwayMatrixByGenes():
         for rel in pathway_edges:
             edge = {"source": rel[0], "target": rel[1]}
             edges.append(edge)
-
-        exclude_overgeneral_pathways = ['Disease']
-
-        for pn in exclude_overgeneral_pathways:
-            if pn in nodes:
-                log.info("ACTUALLY REMOVING %s" % pn)
-                nodes.remove(pn)
-            else:
-                log.info("not removing %s" % pn)
 
         result_object = {"nodes": nodes, "links": edges}
 
@@ -443,6 +434,17 @@ class PathwayMatrixByGenes():
             f.write(self._json)
 
         return self._json
+
+    def pathway_json_nodes_from_matrix(self, exclude_overly_general=True):
+        if exclude_overly_general:
+            exclude_list = ['Disease']
+        else:
+            exclude_list = []
+
+        pathway_nodes = [{"id": x[0], "type":"pathway"}
+                         for x in self.matrix[:] if x != '' and not x[0] in exclude_list]
+
+        return pathway_nodes
 
     def pathway_data_to_hash(self):
         if hasattr(self, "pathway_data"):
