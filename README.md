@@ -33,7 +33,7 @@ REPORTERUNAME
 REPORTERPWD
 
 
-#Docker Setup
+# Docker Setup
 
 You may need to configure your docker authentication first:
 `gcloud auth configure-docker`
