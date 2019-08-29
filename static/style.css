@@ -29,8 +29,15 @@ svg {
     float:right;
     marging-right:20px;
 }
+#legend h3 {
+    font-size:14px
+}
 #legend ul li {
-    padding:4px;
+    padding:2px;
+    font-size:10px;
+}
+#legend p {
+    font-size:10px;
 }
 #legend ul li div {
     display: inline;

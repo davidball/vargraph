@@ -13,7 +13,9 @@ import os
 import logging
 from healthcheck import healthcheck
 
+import mapping.cypher_queries as cypher
 import mapping.mapping_by_transcript as mt
+import mapping.pathway_matrix.pathway_matrix_by_genes_static as mts
 from flask_bootstrap import Bootstrap
 import sys
 
@@ -76,9 +78,9 @@ def logout():
 
 @app.route("/transcripts/<string:transcript_ids>")
 def transcripts(transcript_ids):
-    part1 = mt.pathways_by_transcript_list(transcript_ids.split(","))
+    part1 = cypher.pathways_by_transcript_list(transcript_ids.split(","))
 
-    part2 = "<br/><br/>".join([mt.pathways_by_transcript_id(x)
+    part2 = "<br/><br/>".join([cypher.pathways_by_transcript_id(x)
                                for x in transcript_ids])
 
     return "<h1>Pathways By Transcript List</h1>" + part1 + "<br/><br/>" + "<h1>Pathways By Transcript</h1>" + part2
@@ -86,7 +88,7 @@ def transcripts(transcript_ids):
 
 def render_accession(accession_number):
     app.logger.info("begin render_accession")
-    a = mt.PathwayMatrixByGenes()
+    a = mts.PathwayMatrixByGenesStatic()
 
     allow_cache = not (request.args.get('nocache') == '1')
 
@@ -96,8 +98,8 @@ def render_accession(accession_number):
     accn_json = a.to_json()
 
     return render_template('gene_list_analysis.html',
-                           cypher1=mt.pathways_by_gene_list(a.gene_list),
-                           cypher2=[mt.pathways_by_gene_list(
+                           cypher1=cypher.pathways_by_gene_list(a.gene_list),
+                           cypher2=[cypher.pathways_by_gene_list(
                                [x]) for x in a.gene_list],
                            pathway_matrix=a,
                            matrix=matrix, gene_list=a.gene_list, matrixjson=accn_json)
@@ -113,8 +115,8 @@ def render_gene_list(gene_list):
     m = a.build_matrix('matrixtest.csv')
 
     return render_template('gene_list_analysis.html',
-                           cypher1=mt.pathways_by_gene_list(gene_list),
-                           cypher2=[mt.pathways_by_gene_list(
+                           cypher1=cyper.pathways_by_gene_list(gene_list),
+                           cypher2=[cypher.pathways_by_gene_list(
                                [x]) for x in gene_list],
                            pathway_matrix=a,
                            matrix=m, gene_list=gene_list, matrixjson=a.to_json())
