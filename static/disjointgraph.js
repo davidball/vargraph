@@ -106,10 +106,11 @@ export function disjointGraph(data) {
       return d.id
     } else {
       if (d.type == 'pathway' && data['common_pathways'].includes(d.id)) {
-        return (d.id.slice(0, 15) + '...');
+        return (d.id);//.slice(0, 15) + '...');
       }
       else {
-        return '';
+        return d.id;
+        //return '';
       }
     }
 
