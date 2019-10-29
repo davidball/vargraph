@@ -3,7 +3,7 @@ neobolt==1.7.4
 neotime==1.7.4
 requests==2.18.4
 PYYAML==3.12
-Flask==0.12.2
+Flask==1.0
 Flask-Bootstrap==3.3.7.1
 Flask-Cors==3.0.4
 
